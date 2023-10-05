@@ -1,3 +1,5 @@
+<img align="right" src="images/cat.gif" alt="Éditer sur GitLab" width="350px"/>  
+
 # Maradonna
 
 
@@ -7,8 +9,10 @@
 
 ### Description
 Imaginer un futur où les NAO remplacent les joueurs de foot. 
-Objectif principal : faire marquer un but par Nao en utilisant un asservissement visuel.
-Objectifs secondaires : lui apprendre le tacle et simuler la foulure.
+
+* Objectif principal : faire marquer un but par Nao en utilisant un asservissement visuel.
+* Deuxième objectif : faire la passe à un Nao qui ensuite marque 
+* Objectifs ultimes : lui apprendre le tacle et simuler la foulure.
 
 ### Logiciels
 Simulation sur V-REP, travail dans un environnement virtuel sous Python2.7.
