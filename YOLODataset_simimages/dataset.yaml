@@ -1,5 +1,0 @@
-train: json_labels/YOLODataset/images/train/
-val: json_labels/YOLODataset/images/val/
-test: json_labels/YOLODataset/images/test/
-nc: 1
-names: ["ball"]
