@@ -112,10 +112,14 @@ class NaoDriver:
            exit(1)
         self.posture_proxy
 
-    def set_nao_at_rest(self):
-        """ Set NAO in a safe (rest) position : no current in servos, crouch posture """
+    def set_nao_at_rest(self,stand_init=False):
+        """ Set NAO in a safe (rest) position : no current in servos, crouch posture
+ set stand_init to True if NAO crashes on the floor at the start """
         stiffnesses  = 1.0
-        self.motion_proxy.wakeUp()
+        self.motion_proxy.setStiffnesses(["Body"], stiffnesses)
+        #self.motion_proxy.wakeUp()
+        if stand_init:
+            self.posture_proxy.goToPosture("StandInit", 0.5)
         self.posture_proxy.goToPosture("Crouch", 0.5)
         # relax all servos by removing current (prevent over heating)
         stiffnesses  = 0.0
@@ -181,7 +185,7 @@ class NaoDriver:
     def get_cam_num (self):
         """ return the current camera. 0: Top , 1: Bottom"""
         return self.__cam_num
-        
+    
     def change_camera (self, cam_num):
         """ Change NAO's active camera. cam_num = 0 : top camera, cam_num = 1 : bottom camera """
         self.__cam_num = cam_num
@@ -253,6 +257,9 @@ class NaoDriver:
             img_ok,cv_img,image_width,image_height = self.__get_real_image ()
         return img_ok,cv_img,image_width,image_height
 
+    def save_image (self, file_name):
+        cv2.imwrite (file_name, self.image)
+
     def show_image (self,key=1):
         """ show the last acquired image in a window
         Input : 
@@ -299,7 +306,7 @@ if __name__ == "__main__":
     
     # Important  when using virtual NAO !!! set path to the folder where V-REP stores the camera images
     #nao_drv.set_virtual_camera_path("/home/newubu/Robotics/nao/vnao/plugin-v2/imgs")
-    nao_drv.set_virtual_camera_path("/home/clara/Desktop/visual_servoing/UE52-VS-IK/imgs")
+    nao_drv.set_virtual_camera_path("/home/newubu/Teach/tmp/UE52-VS-IK/imgs")
 
     fps = 4
     dt_loop = 1./fps

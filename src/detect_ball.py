@@ -1,4 +1,5 @@
 import cv2 as cv
+import os
 from ultralytics import YOLO
 
 
@@ -10,10 +11,11 @@ def detect(image):
     h = 0
 
     # Import model
-    model = YOLO("../YOLODataset_simiages/Yolov8/best.pt")
+    path = os.path.dirname(__file__)[:-4]
+    model = YOLO(path + "/YOLODataset_simimages/Yolov8/best.pt", task="detect")
 
     # Prediction
-    results = model(image)
+    results = model(image, device="cpu")
 
     # Affichage
     if results[0].boxes:
@@ -27,3 +29,18 @@ def detect(image):
                          2)
 
     return image, detect_, x, y, w, h
+
+
+if __name__ == "__main__":
+    #image = cv.imread("../../imgs/out_11212.ppm")
+    camera = cv.VideoCapture(0)
+    while True:
+        try:
+            ret, image = camera.read()
+            if ret:
+                image, detect_, x, y, w, h = detect(image)
+                cv.imshow("image", image)
+        except KeyboardInterrupt:
+            break
+
+    cv.destroyAllWindows()
