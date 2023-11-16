@@ -3,3 +3,5 @@ YOLODataset_simimages/checkpoints
 YOLODataset_simimages/weights/darknet53.conv.74
 YOLODataset_simimages/weights/yolov3.weights
 YOLODataset_simimages/weights/yolov3-tiny.weights
+.idea
+nao_driver.pyc
