@@ -73,7 +73,7 @@ def headControl(motionProxy, yaw, pitch, verbose=False):
 
 
 def openEyes(robot_ip, robot_port):
-    # start the nao driver
+    """Start the NAO driver"""
     nao_drv = nao_driver.NaoDriver(nao_ip=robot_ip, nao_port=robot_port)
     # nao_drv.set_nao_at_rest()
 
@@ -88,9 +88,11 @@ def openEyes(robot_ip, robot_port):
     # headControl(motionProxy, 10, 0.2, verbose=True)
     # acquire the image before the motion
     img_ok, cv_img, image_width, image_height = nao_drv.get_image()
-    nao_drv.show_image(key=1)
+    # nao_drv.show_image(key=1)
+    return nao_drv
 
 
+# Pas besoin d'envoyer l'image au serveur : juste reception des informations
 def send_image():
     image = "hihi.jpg"
 
@@ -135,6 +137,20 @@ def send_image():
 
     finally:
         s.close()
+
+
+# Reception des donnes envoyees par la detection
+yolo_host, yolo_port = '127.0.0.1', 6666
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((yolo_host, yolo_port))
+def recv_data(client):
+    # send request
+    client.sendall("REQUEST BALL")
+    # receive and store data
+    answer = client.recv(4096)
+    # booleen de detection, position et rayon de la balle
+    ok, x, y, r = answer.split(" ")
+    return ok, x, y, r
 
 
 if __name__ == "__main__":

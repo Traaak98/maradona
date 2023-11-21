@@ -12,8 +12,9 @@ def detect(image):
 
     # Import model
     path = os.path.dirname(__file__)[:-4]
+    print("Load model")
     model = YOLO(path + "/YOLODataset_simimages/Yolov8/best.pt", task="detect")
-
+    print("Model loaded")
     # Prediction
     results = model(image, device="cpu")
 
@@ -32,15 +33,10 @@ def detect(image):
 
 
 if __name__ == "__main__":
-    #image = cv.imread("../../imgs/out_11212.ppm")
-    camera = cv.VideoCapture(0)
-    while True:
-        try:
-            ret, image = camera.read()
-            if ret:
-                image, detect_, x, y, w, h = detect(image)
-                cv.imshow("image", image)
-        except KeyboardInterrupt:
-            break
-
+    path = os.path.dirname(__file__)[:-12]
+    print(path)
+    image = cv.imread(path + "imgs/out_11212.ppm")
+    image, detect_, x, y, w, h = detect(image)
+    cv.imshow("image", image)
+    cv.waitKey(0)
     cv.destroyAllWindows()
