@@ -38,7 +38,7 @@ def wakeUp(robot_ip, robot_port):
     # allow to stop motion when losing ground contact, NAO stops walking
     # when lifted  (True is default)
     motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", True]])
-    
+
 
     motionProxy.moveInit()
     return motionProxy
@@ -76,15 +76,23 @@ def headControl(motionProxy, yaw, pitch, verbose=False):
     if verbose:
         time.sleep(0.5) # attendre la fin du deplacement avant de reprendre les donnees
         head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
-        print("HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi)
+        print "HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi
 
 
 def attain_ball(motionProxy, verbose=False):
     """How to compute x and y ?"""
     # Tourner le corps du meme angle que la tete
     head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
-    motionProxy.
-    motionProxy.
+    x, y, theta = motionProxy.getRobotPosition(False)
+
+    # print "Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
+    err_theta = 2*np.arctan(np.tan((head_yaw - theta)/2))
+    # print "Error theta: ", err_theta
+
+    motionProxy.moveTo(0, 0, err_theta)
+    headControl(motionProxy, 0, head_pitch, verbose=False)
+    x, y, theta = motionProxy.getRobotPosition(False)
+    # print "After Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
     return
 
 
@@ -161,9 +169,9 @@ def openEyes(robot_ip, robot_port):
 
 
 # Reception des donnes envoyees par la detection -> FSM
-yolo_host, yolo_port = '127.0.0.1', 6666
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((yolo_host, yolo_port))
+# yolo_host, yolo_port = '127.0.0.1', 6666
+# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# s.connect((yolo_host, yolo_port))
 def recv_data(client):
     # send request
     client.sendall("REQUEST BALL")
@@ -195,6 +203,11 @@ if __name__ == "__main__":
         img_ok,img,nx,ny = nao_drv.get_image()
         nao_drv.show_image(key=1)
 
+        headControl(motion, 1, 0, verbose=True)
+        time.sleep(0.5)
+        attain_ball(motion)
+
+        break
 
         dt = dt_loop-(time.time()-t0_loop)
         if dt > 0:
