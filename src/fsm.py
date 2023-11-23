@@ -36,20 +36,25 @@ def recv_data(client):
 
 def search():
     # Get detect bool from image detection
+    print "Client request"
     detect_, x, y, w, h = recv_data(s)
+    print "Answer received"
+
     direction = 1
     while not detect_:
         # Update image
         nao_drv.get_image()
-        nao_drv.show_image(key=0.5)     # 0.5 s
+        nao_drv.show_image(key=1)     # 1 s
         # Check if we should change turn direction
-        head_yaw = motion.getAngles("HeadYaw", True)
+        head_yaw = motion.getAngles("HeadYaw", True)[0]
         print "HeadYaw: ", head_yaw * 180 / np.pi
+
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
         # Turn head
         control.headControl(motion, direction * 0.1, 0, verbose=False)
         time.sleep(0.1)
+
         # Detect ball
         detect_, x, y, w, h = recv_data(s)
         print "Detect: ", detect_
@@ -62,7 +67,7 @@ def walk():
     while detect_:
         # Update image
         nao_drv.get_image()
-        nao_drv.show_image(key=0.5)     # 0.5 s
+        nao_drv.show_image(key=1)     # 1 s
         # Walk
         control.attain_ball(motion, x, y, w, h, verbose=False)
         # Detect ball

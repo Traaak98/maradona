@@ -2,6 +2,7 @@ import cv2 as cv
 from ultralytics import YOLO
 import os
 import numpy as np
+import time as time
 
 
 def load_model():
@@ -20,7 +21,11 @@ def detect_ball(image, model):
     h = 0
 
     # Prediction
+    t0 = time.time()
+    print("Avant prediction")
     results = model(image)
+    t1 = time.time()
+    print("Temps prediction : ", t1 - t0)
 
     # Affichage
     if results[0].boxes:
@@ -37,7 +42,8 @@ def detect_ball(image, model):
                     h = result.boxes.xywh[0][3]
                     cv.rectangle(image, (int(x - w / 2), int(y + h / 2)), (int(x + w / 2), int(y - h / 2)), (0, 255, 0),
                                  2)
-
+    t2 = time.time()
+    print("Temps affichage : ", t2 - t1)
     return image, detect_, x, y, w, h
 
 
