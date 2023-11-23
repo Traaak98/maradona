@@ -1,4 +1,7 @@
 import socket
+import time
+
+import numpy as np
 import control_head as control
 
 
@@ -22,23 +25,50 @@ def recv_data(client):
     # send request
     client.sendall("REQUEST BALL")
     # receive and store data
-    answer = client.recv(4096)
-    # booleen de detection, position, largeur et hauteur de la balle
-    ok, x, y, w, h = answer.split(" ")
+    ok = client.recv(4096)
+    x = client.recv(4096)
+    y = client.recv(4096)
+    w = client.recv(4096)
+    h = client.recv(4096)
+    # client.sendall("BYE BYE")
     return ok, x, y, w, h
 
 
 def search():
     # Get detect bool from image detection
     detect_, x, y, w, h = recv_data(s)
+    direction = 1
     while not detect_:
         # Update image
         nao_drv.get_image()
         nao_drv.show_image(key=0.5)     # 0.5 s
+        # Check if we should change turn direction
+        head_yaw = motion.getAngles("HeadYaw", True)
+        print "HeadYaw: ", head_yaw * 180 / np.pi
+        if abs(head_yaw * 180 / np.pi) > 118:
+            direction *= -1
         # Turn head
-        control.headControl(motion, 0.2, 0, verbose=False)
+        control.headControl(motion, direction * 0.1, 0, verbose=False)
+        time.sleep(0.1)
         # Detect ball
         detect_, x, y, w, h = recv_data(s)
+        print "Detect: ", detect_
+    return
+
+
+def walk():
+    # Get detect bool from image detection
+    detect_, x, y, w, h = recv_data(s)
+    while detect_:
+        # Update image
+        nao_drv.get_image()
+        nao_drv.show_image(key=0.5)     # 0.5 s
+        # Walk
+        control.attain_ball(motion, x, y, w, h, verbose=False)
+        # Detect ball
+        detect_, x, y, w, h = recv_data(s)
+
+    motion.stopMove()
     return
 
 

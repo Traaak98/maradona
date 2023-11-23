@@ -7,7 +7,74 @@ from naoqi import ALProxy
 import nao_driver
 
 
-# class Maradonna(A)
+class Maradona:
+    def __init__(self, robot_ip, robot_port):
+        # Initialize motion proxy
+        self.motionProxy = wakeUp(robot_ip, robot_port)
+        # Other movement variables
+        self.fractionMaxSpeed = 0.8
+        self.dt = 0.1
+        # Initialize NAO driver
+        self.nao_drv = openEyes(robot_ip, robot_port)
+        return
+
+    def wakeUp(self, robot_ip, robot_port):
+        try:
+            motionProxy = ALProxy("ALMotion", robot_ip, robot_port)
+        except Exception, e:
+            print "Could not create proxy to ALMotion"
+            print "Error was: ", e
+            exit()
+
+        motionProxy.wakeUp()
+
+        # Enable arms control by Walk algorithm
+        motionProxy.setWalkArmsEnabled(True, True)
+
+        # allow to stop motion when losing ground contact, NAO stops walking
+        # when lifted  (True is default)
+        motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", True]])
+        return motionProxy
+
+    def openEyes(self, robot_ip, robot_port):
+        """Start the NAO driver"""
+        nao_drv = nao_driver.NaoDriver(nao_ip=robot_ip, nao_port=robot_port)
+        # nao_drv.set_nao_at_rest()
+
+        # Important !!! define the path to the folder V-REP uses to store the camera images
+        if nao_drv.vnao:
+            nao_drv.set_virtual_camera_path("/home/clara/Desktop/visual_servoing/UE52-VS-IK/imgs")
+
+        # set top camera (cam_num: top=0, bottom=1)
+        cam_num = 0
+        nao_drv.change_camera(cam_num)
+
+        # headControl(motionProxy, 10, 0.2, verbose=True)
+        # acquire the image before the motion
+        img_ok, cv_img, image_width, image_height = nao_drv.get_image()
+        # nao_drv.show_image(key=1)
+        return nao_drv
+
+    def headControl(self, yaw, pitch):
+        self.motionProxy.setAngles(["HeadYaw", "HeadPitch"], [yaw, pitch], self.fractionMaxSpeed)
+        time.sleep(self.dt)
+
+    def alignHeadBody(self):
+        head_yaw, head_pitch = self.motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
+        x, y, theta = self.motionProxy.getRobotPosition(False)
+        err_theta = 2*np.arctan(np.tan((head_yaw - theta)/2))
+        vx, vy, w = 0, 0, 0
+        while err_theta * 180 / np.pi > 5:
+            # Ca enleve l'interet du non bloquant...
+            w = np.sign(err_theta) * 0.1
+            self.motionProxy.moveToward(vx, vy, w)
+        headControl(self.motionProxy, 0, head_pitch, verbose=False)
+
+    def walkTo(self, vx, vy, w):
+        self.motionProxy.moveToward(vx, vy, w)
+        time.sleep(self.dt)
+
+
 # set default IP nd port on simulated robot
 robot_ip = "localhost"
 robot_port = 11212
@@ -41,7 +108,7 @@ def wakeUp(robot_ip, robot_port):
     motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", True]])
 
 
-    motionProxy.moveInit()
+    # motionProxy.moveInit()
     return motionProxy
 
 
@@ -80,17 +147,23 @@ def headControl(motionProxy, yaw, pitch, verbose=False):
         print "HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi
 
 
-def attain_ball(motionProxy, verbose=False):
-    """How to compute x and y ?"""
+def attain_ball(motionProxy, x, y, w, h, verbose=False):
+    # Garder la balle centree dans l'image
+    center_ball(motionProxy, x, y, w, h)
+
     # Tourner le corps du meme angle que la tete
     head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
     x, y, theta = motionProxy.getRobotPosition(False)
 
     # print "Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
     err_theta = 2*np.arctan(np.tan((head_yaw - theta)/2))
-    # print "Error theta: ", err_theta
+    print "Error theta: ", err_theta
+    vx, vy, w = 0, 0, 0
+    if err_theta * 180 / np.pi > 5:
+        w = np.sign(err_theta) * 0.1
+    print "Vitesse angulaire : ", w
 
-    motionProxy.moveTo(0, 0, err_theta)
+    motionProxy.moveToward(vx, vy, w)
     headControl(motionProxy, 0, head_pitch, verbose=False)
     x, y, theta = motionProxy.getRobotPosition(False)
     # print "After Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
@@ -167,20 +240,6 @@ def openEyes(robot_ip, robot_port):
 
     finally:
         s.close()"""
-
-
-# Reception des donnes envoyees par la detection -> FSM
-# yolo_host, yolo_port = '127.0.0.1', 6666
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# s.connect((yolo_host, yolo_port))
-def recv_data(client):
-    # send request
-    client.sendall("REQUEST BALL")
-    # receive and store data
-    answer = client.recv(4096)
-    # booleen de detection, position et rayon de la balle
-    ok, x, y, r = answer.split(" ")
-    return ok, x, y, r
 
 
 if __name__ == "__main__":
