@@ -13,6 +13,8 @@ s.connect((yolo_host, yolo_port))
 robot_ip = "localhost"
 robot_port = 11212
 motion = control.wakeUp(robot_ip, robot_port)
+
+# Faire tourner la camera en arriere plan en permanence !
 nao_drv = control.openEyes(robot_ip, robot_port)
 
 
@@ -30,6 +32,9 @@ def search():
     # Get detect bool from image detection
     detect_, x, y, w, h = recv_data(s)
     while not detect_:
+        # Update image
+        nao_drv.get_image()
+        nao_drv.show_image(key=0.5)     # 0.5 s
         # Turn head
         control.headControl(motion, 0.2, 0, verbose=False)
         # Detect ball
