@@ -12,26 +12,40 @@ robot_ip = "localhost"
 robot_port = 11212
 
 
-# def wakeUp(robot_ip, robot_port):
-try:
-    motionProxy = ALProxy("ALMotion", robot_ip, robot_port)
-except Exception, e:
-    print "Could not create proxy to ALMotion"
-    print "Error was: ", e
-    exit()
+def wakeUp(robot_ip, robot_port):
+    try:
+        motionProxy = ALProxy("ALMotion", robot_ip, robot_port)
+    except Exception, e:
+        print "Could not create proxy to ALMotion"
+        print "Error was: ", e
+        exit()
 
-try:
-    postureProxy = ALProxy("ALRobotPosture", robot_ip, robot_port)
-except Exception, e:
-    print "Could not create proxy to ALRobotPosture"
-    print "Error was: ", e
-    exit()
+    # try:
+    #     postureProxy = ALProxy("ALRobotPosture", robot_ip, robot_port)
+    # except Exception, e:
+    #     print "Could not create proxy to ALRobotPosture"
+    #     print "Error was: ", e
+    #     exit()
 
-motionProxy.wakeUp()
+    motionProxy.wakeUp()
+
+    # Send NAO to Pose Init : it not standing then standing up
+    #postureProxy.goToPosture("StandInit", 0.5)
+
+    # Enable arms control by Walk algorithm
+    motionProxy.setWalkArmsEnabled(True, True)
+
+    # allow to stop motion when losing ground contact, NAO stops walking
+    # when lifted  (True is default)
+    motionProxy.setMotionConfig([["ENABLE_FOOT_CONTACT_PROTECTION", True]])
+    
+
+    motionProxy.moveInit()
+    return motionProxy
 
 
-# Fonction a appeler quand la balle est detectee
 def center_ball(motionProxy, px, py, width, height):
+    """Function used to center the ball in the image by moving the head / Control computation / Guidage"""
     err_x = width / 2 - px
     err_y = py - height / 2
     delta_angle = 0.05  # correction en radians
@@ -47,15 +61,13 @@ def center_ball(motionProxy, px, py, width, height):
     elif err_y < -delta_err:
         pitch = - delta_angle
 
-    head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
-    fractionMaxSpeed = 0.8
-    motionProxy.setAngles(["HeadYaw", "HeadPitch"], [head_yaw + yaw, head_pitch + pitch], fractionMaxSpeed)
+    headControl(motionProxy, yaw, pitch, verbose=False)
     time.sleep(0.1)
     return
 
 
-# Insert head control here
 def headControl(motionProxy, yaw, pitch, verbose=False):
+    """Function used to control the head / Communication with the drivers."""
     head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
     if verbose:
         print "HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi
@@ -67,9 +79,18 @@ def headControl(motionProxy, yaw, pitch, verbose=False):
         print("HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi)
 
 
-# set back NAO in a safe position
-# il sautille un peu a cause de cette fonction et une fois sur deux il tombe
-# nao_drv.set_nao_at_rest()
+def attain_ball(motionProxy, verbose=False):
+    """How to compute x and y ?"""
+    # Tourner le corps du meme angle que la tete
+    head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
+    motionProxy.
+    motionProxy.
+    return
+
+
+def walkTo(motionProxy, vx, vy, w, verbose=False):
+    """Communication with the drivers"""
+    return
 
 
 def openEyes(robot_ip, robot_port):
@@ -93,7 +114,7 @@ def openEyes(robot_ip, robot_port):
 
 
 # Pas besoin d'envoyer l'image au serveur : juste reception des informations
-def send_image():
+"""def send_image():
     image = "hihi.jpg"
 
     host = '127.0.0.1'
@@ -136,10 +157,10 @@ def send_image():
         myfile.close()
 
     finally:
-        s.close()
+        s.close()"""
 
 
-# Reception des donnes envoyees par la detection
+# Reception des donnes envoyees par la detection -> FSM
 yolo_host, yolo_port = '127.0.0.1', 6666
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((yolo_host, yolo_port))
@@ -155,7 +176,8 @@ def recv_data(client):
 
 if __name__ == "__main__":
     # create NAO driver
-    nao_drv = nao_driver.NaoDriver(nao_ip=robot_ip, nao_port=robot_port)
+    nao_drv = openEyes(robot_ip, robot_port)
+    motion = wakeUp(robot_ip, robot_port)
 
     # put NAO in safe position
     # nao_drv.set_nao_at_rest()
@@ -169,8 +191,11 @@ if __name__ == "__main__":
     # infinite test loop, stops with Ctrl-C
     while True:
         t0_loop = time.time()
+
         img_ok,img,nx,ny = nao_drv.get_image()
         nao_drv.show_image(key=1)
+
+
         dt = dt_loop-(time.time()-t0_loop)
         if dt > 0:
             time.sleep(dt)
