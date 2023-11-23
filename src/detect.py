@@ -1,5 +1,6 @@
 import cv2 as cv
 from ultralytics import YOLO
+import torch
 import os
 import numpy as np
 import time as time
@@ -8,8 +9,17 @@ import time as time
 def load_model():
     # Import model
     path = os.path.dirname(__file__)[:-4]
-    print(path)
+    # print(path)
     model = YOLO(path + "/Yolov8/model/best.pt")
+
+    # Load image for first prediction
+    path = os.path.dirname(__file__)[:-12]
+    image = cv.imread(path + "imgs/out_11212.ppm")
+    # t0 = time.time()
+    # print("Avant 1ere prediction")
+    model(image)
+    # t1 = time.time() - t0
+    # print("Apres 1ere prediction : ", t1)
     return model
 
 
@@ -21,11 +31,12 @@ def detect_ball(image, model):
     h = 0
 
     # Prediction
-    t0 = time.time()
-    print("Avant prediction")
+    # t0 = time.time()
+    # print("Avant prediction")
+    # results = model.predict(image, imgsz=(160, 120), device='cpu', max_det=1)
     results = model(image)
-    t1 = time.time()
-    print("Temps prediction : ", t1 - t0)
+    # t1 = time.time()
+    # print("Temps prediction : ", t1 - t0)
 
     # Affichage
     if results[0].boxes:
@@ -42,8 +53,8 @@ def detect_ball(image, model):
                     h = result.boxes.xywh[0][3]
                     cv.rectangle(image, (int(x - w / 2), int(y + h / 2)), (int(x + w / 2), int(y - h / 2)), (0, 255, 0),
                                  2)
-    t2 = time.time()
-    print("Temps affichage : ", t2 - t1)
+    # t2 = time.time()
+    # print("Temps affichage : ", t2 - t1)
     return image, detect_, x, y, w, h
 
 
@@ -74,3 +85,10 @@ def detect_goal(image, model):
                                  2)
 
     return image, detect_, x, y, w, h
+
+
+if __name__ == "__main__":
+    model = load_model()
+    path = os.path.dirname(__file__)[:-12]
+    image = cv.imread(path + "imgs/out_11212.ppm")
+    detect_ball(image, model)
