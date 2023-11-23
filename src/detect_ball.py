@@ -1,6 +1,6 @@
 import cv2 as cv
 from ultralytics import YOLO
-
+import os
 
 def detect(image):
     detect_ = False
@@ -10,7 +10,8 @@ def detect(image):
     h = 0
 
     # Import model
-    model = YOLO("../YOLODataset_simiages/Yolov8/best.pt")
+    path = os.path.dirname(__file__)[:-4]
+    model = YOLO(path + "/best.pt")
 
     # Prediction
     results = model(image)
