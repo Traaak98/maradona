@@ -1,7 +1,6 @@
 import cv2 as cv
-import os
 from ultralytics import YOLO
-
+import os
 
 def detect(image):
     detect_ = False
@@ -12,11 +11,10 @@ def detect(image):
 
     # Import model
     path = os.path.dirname(__file__)[:-4]
-    print("Load model")
-    model = YOLO(path + "/YOLODataset_simimages/Yolov8/best.pt", task="detect")
-    print("Model loaded")
+    model = YOLO(path + "/best.pt")
+
     # Prediction
-    results = model(image, device="cpu")
+    results = model(image)
 
     # Affichage
     if results[0].boxes:
@@ -30,13 +28,3 @@ def detect(image):
                          2)
 
     return image, detect_, x, y, w, h
-
-
-if __name__ == "__main__":
-    path = os.path.dirname(__file__)[:-12]
-    print(path)
-    image = cv.imread(path + "imgs/out_11212.ppm")
-    image, detect_, x, y, w, h = detect(image)
-    cv.imshow("image", image)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
