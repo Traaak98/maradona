@@ -7,7 +7,8 @@ import numpy as np
 def load_model():
     # Import model
     path = os.path.dirname(__file__)[:-4]
-    model = YOLO(path + "/best.pt")
+    print(path)
+    model = YOLO(path + "/Yolov8/model/best.pt")
     return model
 
 

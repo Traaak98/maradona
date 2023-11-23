@@ -4,9 +4,9 @@ import random
 import socket, select
 from time import gmtime, strftime
 from random import randint
-
-imgcounter = 1
-basename = "image%s.png"
+from detect import detect_goal, detect_ball, load_model
+import cv2 as cv
+import os
 
 HOST = '127.0.0.1'
 PORT = 6666
@@ -36,53 +36,44 @@ while True:
         else:
             try:
                 print(' Buffer size is %s' % buffer_size)
+
+                # Load model :
+                model = load_model()
+
+                # Find image :
+                path = os.path.dirname(__file__)[:-4]
+                print(path)
+                image = cv.imread(path + "imgs/out_11212.ppm")
+
+                # MESSAGE :
                 data = sock.recv(buffer_size)
                 txt = str(data)     # b'blabla' to blabla
                 txt = txt[2:-1]
 
-                if txt[0:4] == "SIZE":
-                    tmp = txt.split()
-                    size = int(tmp[1])
+                if txt == "REQUEST BALL":
+                    new_image, detect_, x, y, w, h = detect_ball(image, model)
+                    cv.imwrite(path + "imgs/out_11212_detect.ppm", new_image)
 
-                    print('got size')
-                    print('size is %s' % size)
+                    sock.send(detect_)
+                    sock.send(x)
+                    sock.send(y)
+                    sock.send(w)
+                    sock.send(h)
+                    print("detect = ", detect_)
+                    print("x = ", x)
+                    print("y = ", y)
+                    print("w = ", w)
+                    print("h = ", h)
 
-                    sock.send(b"GOT SIZE")
-                    # Now set the buffer size for the image
-                    buffer_size = 40960000
 
-                elif txt[0:4] == 'BYE ':
+                elif txt == 'BYE':
                     print('got BYE')
                     sock.shutdown()
-
-                elif data:
-                    print('got image en theorie')
-                    myfile = open(basename % imgcounter, 'ab')
-
-                    if not data:
-                        print('no data rip')
-                        myfile.close()
-                        break
-
-                    if txt[0:3] == 'EOF':
-                        myfile.close()
-                        print('got EOF')
-                        sock.send(b"GOT IMAGE")
-                        buffer_size = 4096
-                        sock.shutdown()
-
-                    myfile.write(data)
-                    sock.send(b"WRITE OK")
-                    print("writing file ....")
-
-                else:
-                    print('Send nothing back.')
 
             except:
                 sock.close()
                 connected_clients_sockets.remove(sock)
                 print('Client disconnected.')
                 continue
-        # imgcounter += 1
 
 server_socket.close()
