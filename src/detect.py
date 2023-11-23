@@ -8,12 +8,12 @@ import time as time
 
 def load_model():
     # Import model
-    path = os.path.dirname(__file__)[:-4]
+    path = os.getcwd()[0:-4]
     # print(path)
     model = YOLO(path + "/Yolov8/model/best.pt")
 
     # Load image for first prediction
-    path = os.path.dirname(__file__)[:-12]
+    path = os.getcwd()[0:-12]
     image = cv.imread(path + "imgs/out_11212.ppm")
     # t0 = time.time()
     # print("Avant 1ere prediction")
@@ -89,6 +89,6 @@ def detect_goal(image, model):
 
 if __name__ == "__main__":
     model = load_model()
-    path = os.path.dirname(__file__)[:-12]
+    path = os.getcwd()[0:-12]
     image = cv.imread(path + "imgs/out_11212.ppm")
     detect_ball(image, model)

@@ -2,6 +2,7 @@ import numpy as np
 import time
 import sys
 import socket
+import os
 
 from naoqi import ALProxy
 import nao_driver
@@ -43,7 +44,8 @@ class Maradona:
 
         # Important !!! define the path to the folder V-REP uses to store the camera images
         if nao_drv.vnao:
-            nao_drv.set_virtual_camera_path("/home/clara/Desktop/visual_servoing/UE52-VS-IK/imgs")
+            path = os.getcwd()[0:-12]
+            nao_drv.set_virtual_camera_path(path + "imgs")
 
         # set top camera (cam_num: top=0, bottom=1)
         cam_num = 0
@@ -182,7 +184,8 @@ def openEyes(robot_ip, robot_port):
 
     # Important !!! define the path to the folder V-REP uses to store the camera images
     if nao_drv.vnao:
-         nao_drv.set_virtual_camera_path("/home/clara/Desktop/visual_servoing/UE52-VS-IK/imgs")
+         path = os.getcwd()[0:-12]
+         nao_drv.set_virtual_camera_path(path + "imgs")
 
     # set top camera (cam_num: top=0, bottom=1)
     cam_num = 0
@@ -243,6 +246,8 @@ def openEyes(robot_ip, robot_port):
 
 
 if __name__ == "__main__":
+    path = os.getcwd()[0:-12]
+    print("path = ", path)
     # create NAO driver
     nao_drv = openEyes(robot_ip, robot_port)
     motion = wakeUp(robot_ip, robot_port)
@@ -252,7 +257,7 @@ if __name__ == "__main__":
 
     # Important  when using virtual NAO !!! set path to the folder where V-REP stores the camera images
     #nao_drv.set_virtual_camera_path("/home/newubu/Robotics/nao/vnao/plugin-v2/imgs")
-    nao_drv.set_virtual_camera_path("/home/clara/Desktop/visual_servoing/UE52-VS-IK/imgs")
+    nao_drv.set_virtual_camera_path(path + "imgs")
 
     fps = 4
     dt_loop = 1./fps

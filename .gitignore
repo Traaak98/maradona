@@ -1,2 +1,4 @@
 .idea
 nao_driver.pyc
+src/__pycache__/
+src/control_head.pyc

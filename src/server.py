@@ -37,43 +37,40 @@ while True:
             connected_clients_sockets.append(sockfd)
         else:
             try:
-                print('Buffer size is %s' % buffer_size)
+                # print('Buffer size is %s' % buffer_size)
 
                 # Find image :
-                path = os.path.dirname(__file__)[:-12]
+                path = os.getcwd()[0:-12]
                 # print(path)
                 image = cv.imread(path + "imgs/out_11212.ppm")
 
                 # MESSAGE :
                 t1 = time() - t0
-                print("Avant requete client : ", t1)
+                # print("Avant requete client : ", t1)
                 data = sock.recv(buffer_size)
                 txt = str(data)     # b'blabla' to blabla
                 txt = txt[2:-1]
 
                 if txt == "REQUEST BALL":
-                    t2 = time() - t0
-                    print("Avant utilisation modele : ", t2)
+                    #t2 = time() - t0
+                    #print("Avant utilisation modele : ", t2)
                     new_image, detect_, x, y, w, h = detect_ball(image, model)
-                    t3 = time() - t0
-                    print("Entre modele et imwrite : ", t3)
+                    #t3 = time() - t0
+                    #print("Entre modele et imwrite : ", t3)
                     cv.imwrite(path + "imgs/out_11212_detect.ppm", new_image)
 
-                    t4 = time() - t0
-                    print("Avant envoi : ", t4)
-                    sock.send(detect_)
-                    sock.send(x)
-                    sock.send(y)
-                    sock.send(w)
-                    sock.send(h)
+                    #t4 = time() - t0
+                    #print("Avant envoi : ", t4)
+                    message = b"%d;%2f;%2f;%2f;%.2f" % (detect_, x, y, w, h)
+                    sock.send(message)
                     print("detect = ", detect_)
                     print("x = ", x)
                     print("y = ", y)
                     print("w = ", w)
                     print("h = ", h)
 
-                    t5 = time() - t0
-                    print("Fin requete client : ", t5)
+                    #t5 = time() - t0
+                    #print("Fin requete client : ", t5)
 
                 elif txt == 'BYE':
                     print('got BYE')
