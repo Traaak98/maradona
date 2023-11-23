@@ -60,7 +60,9 @@ def search():
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
         # Turn head
-        control.headControl(motion, direction * 0.1, 0, verbose=False)
+        print "motion = ", motion
+        print "direction = ", direction*0.1
+        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=True)
         time.sleep(0.1)
 
         # Detect ball
