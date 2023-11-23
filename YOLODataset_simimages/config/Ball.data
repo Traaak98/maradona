@@ -1,4 +1,0 @@
-classes= 1
-train=data/Ball/train.txt
-valid=data/Ball/valid.txt
-names=data/Ball.names
