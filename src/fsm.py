@@ -8,6 +8,13 @@ yolo_host, yolo_port = '127.0.0.1', 6666
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((yolo_host, yolo_port))
 
+# Possibilite de initialiser tout ca de maniere plus propre avec une classe ou jsp
+# set default IP nd port on simulated robot
+robot_ip = "localhost"
+robot_port = 11212
+motion = control.wakeUp(robot_ip, robot_port)
+nao_drv = control.openEyes(robot_ip, robot_port)
+
 
 def recv_data(client):
     # send request
@@ -24,7 +31,7 @@ def search():
     detect_, x, y, w, h = recv_data(s)
     while not detect_:
         # Turn head
-        control.headControl(0.2, 0, verbose=False)
+        control.headControl(motion, 0.2, 0, verbose=False)
         # Detect ball
         detect_, x, y, w, h = recv_data(s)
     return

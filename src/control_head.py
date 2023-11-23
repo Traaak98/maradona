@@ -7,6 +7,7 @@ from naoqi import ALProxy
 import nao_driver
 
 
+# class Maradonna(A)
 # set default IP nd port on simulated robot
 robot_ip = "localhost"
 robot_port = 11212
