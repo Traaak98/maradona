@@ -112,7 +112,7 @@ def alignHead():
     if not detect_:
         return "noDetectBall"
 
-    if abs(err_x) > 5 or abs(err_y) > 5:
+    if abs(err_x) > 12 or abs(err_y) > 10:
         yaw = 0.05 * err_x / nao_drv.image_width
         pitch = - 0.05 * err_y / nao_drv.image_height
         if verbose:
@@ -124,6 +124,34 @@ def alignHead():
         return "noAlignHeadDetectBall"
     else:
         return "alignHeadDetectBall"
+
+
+def alignBody():
+    # Tourner le corps du meme angle que la tete
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    x, y, theta = motion.getRobotPosition(False)
+    err_theta = 2*np.arctan(np.tan((head_yaw - theta)/2))
+    if verbose:
+        print "--- Align Body ---"
+        print "Erreur angulaire : ", err_theta
+
+    while err_theta * 180 / np.pi > 5:
+        # print "Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
+        err_theta = 2 * np.arctan(np.tan((head_yaw - theta)/2))
+        # print "Error theta: ", err_theta
+        if verbose:
+            print "Erreur angulaire : ", err_theta * 180 / np.pi
+        motion.moveTo(0, 0, theta + err_theta)
+        x, y, theta = motion.getRobotPosition(False)
+
+    control.headControl(motion, 0, head_pitch, verbose=False)
+    detect_, x, y, w, h = recv_data_ball(s)
+    if not detect_:
+        if verbose:
+            print "We lost the ball while turning the body"
+        return "noDetectBall"
+    else:
+        return "alignBodyDetectBall"
 
 
 if __name__ == "__main__":

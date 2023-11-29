@@ -14,7 +14,6 @@ AlignHead Search noDetectBall alignHead
 AlignHead AlignHead noAlignHeadDetectBall alignHead
 AlignHead AlignBody alignHeadDetectBall alignHead
 AlignBody Search noDetectBall alignBody
-AlignBody AlignBody noAlignBodyDetectBall alignBody
 AlignBody WalkToBall alignBodyDetectBall alignBody
 WalkToBall Search noDetectBall walkToBall
 WalkToBall WalkToBall noAttainBall walkToBall
@@ -27,7 +26,6 @@ noDetectBall
 alignHeadDetectBall
 noAlignHeadDetectBall
 alignBodyDetectBall
-noAlignBodyDetectBall
 noAttainBall
 attainBall
 ---- Start State
