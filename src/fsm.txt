@@ -1,0 +1,38 @@
+----- States
+Idle
+Search
+AlignHead
+AlignBody
+WalkToBall
+Stop
+----- Transitions
+Idle Idle wait doWait
+Idle Search go doWait
+Search Search noDetectBall searchBall
+Search AlignHead detectBall noDetectBall
+AlignHead Search noDetectBall alignHead
+AlignHead AlignHead noAlignHeadDetectBall alignHead
+AlignHead AlignBody alignHeadDetectBall alignHead
+AlignBody Search noDetectBall alignBody
+AlignBody AlignBody noAlignBodyDetectBall alignBody
+AlignBody WalkToBall alignBodyDetectBall alignBody
+WalkToBall Search noDetectBall walkToBall
+WalkToBall WalkToBall noAttainBall walkToBall
+WalkToBall Stop attainBall doStop
+----- Events
+wait
+go
+detectBall
+noDetectBall
+alignHeadDetectBall
+noAlignHeadDetectBall
+alignBodyDetectBall
+noAlignBodyDetectBall
+noAttainBall
+attainBall
+---- Start State
+Idle
+---- Start Event
+wait
+---- End State
+Stop
