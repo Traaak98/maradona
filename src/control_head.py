@@ -195,6 +195,14 @@ def openEyes(robot_ip, robot_port):
 
 
 def doWait(motionProxy):
+    global time_dodo
+    motionProxy.stopMove()
+    motionProxy.rest()
+    time.sleep(time_dodo)
+    return
+
+
+def doStop(motionProxy):
     motionProxy.stopMove()
     motionProxy.rest()
     return
