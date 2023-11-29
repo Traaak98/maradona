@@ -42,7 +42,9 @@ def recv_data_ball(client):
     return ok, x, y, w, h
 
 
-def search():
+def searchBall():
+    if verbose:
+        print "--- Search Ball ---"
     detect_, x, y, w, h = recv_data_ball(s)
     direction = 1
 
@@ -86,33 +88,27 @@ def walk():
 
 def alignHead():
     global verbose
+    if verbose:
+        print "--- Align Head ---"
     # Center the ball in the image to align the head
     detect_, x, y, w, h = recv_data_ball(s)
-    err_x, err_y = 100, 100
-    dt_loop = 0.05
-    t0_loop = time.time()
+    err_x = nao_drv.image_width / 2 - x
+    err_y = y - nao_drv.image_height / 2
+
     if not detect_:
         return "noDetectBall"
 
     if abs(err_x) > 5 or abs(err_y) > 5:
-        err_x = nao_drv.image_width / 2 - x
-        err_y = y - nao_drv.image_height / 2
-        yaw = 0.05 * np.sign(err_x) # / nao_drv.image_width
-        pitch = 0.05 * np.sign(err_y) # / nao_drv.image_height
+        yaw = 0.05 * err_x / nao_drv.image_width
+        pitch = - 0.05 * err_y / nao_drv.image_height
         if verbose:
             print "Error head : err_x = ", err_x, " / err_y = ", err_y
             print "Moving head : yaw = ", yaw, " / pitch = ", pitch
         head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 
         control.headControl(motion, head_yaw + yaw, head_pitch + pitch, verbose=False)
-        detect_, x, y, w, h = recv_data_ball(s)
-        # # Waiting time
-        # dt = dt_loop-(time.time()-t0_loop)
-        # if dt > 0:
-        #     time.sleep(dt)
         return "noAlignHeadDetectBall"
     else:
-        print "Ball aligned"
         return "alignHeadDetectBall"
 
 
