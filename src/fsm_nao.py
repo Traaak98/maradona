@@ -45,32 +45,13 @@ def recv_data_ball(client):
 def search():
     detect_, x, y, w, h = recv_data_ball(s)
     direction = 1
-<<<<<<< HEAD
-    while not detect_:
-        # Update image
-        nao_drv.get_image()
-        nao_drv.show_image(key=1)  # 1 s
-=======
-
     if not detect_:
->>>>>>> 258097e9443490f87d330f099eca992a6b685d63
         # Check if we should change turn direction
         head_yaw = motion.getAngles("HeadYaw", True)[0]
         # Change direction if we are too close to the limit
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
         # Turn head
-<<<<<<< HEAD
-        print "motion = ", motion
-        print "direction = ", direction * 0.1
-        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=True)
-        time.sleep(0.1)
-
-        # Detect ball
-        detect_, x, y, w, h = recv_data(s)
-        print "Detect: ", detect_
-    return
-=======
         if verbose:
             print "Moving head : direction = ", direction * 0.05
         control.headControl(motion, head_yaw + direction * 0.05, 0, verbose=False)
@@ -84,7 +65,6 @@ def search():
             print "h = ", h
             print "Found Ball"
         return "detectBall"
->>>>>>> 258097e9443490f87d330f099eca992a6b685d63
 
 
 def walk():
@@ -102,8 +82,6 @@ def walk():
     motion.stopMove()
     return
 
-
-<<<<<<< HEAD
 def doWait():
     time_dodo = 5
     motion.stopMove()
@@ -118,7 +96,8 @@ def doStop():
     motion.rest()
     event = None
     return event
-=======
+
+
 def alignHead():
     global verbose
     # Center the ball in the image to align the head
@@ -149,7 +128,6 @@ def alignHead():
     else:
         print "Ball aligned"
         return "alignHeadDetectBall"
->>>>>>> 258097e9443490f87d330f099eca992a6b685d63
 
 
 if __name__ == "__main__":
