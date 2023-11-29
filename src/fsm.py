@@ -48,11 +48,11 @@ def search():
         # Check if we should change turn direction
         head_yaw = motion.getAngles("HeadYaw", True)[0]
         print "HeadYaw: ", head_yaw * 180 / np.pi
-
+        # Change direction if we are too close to the limit
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
         # Turn head
-        control.headControl(motion, direction * 0.1, 0, verbose=False)
+        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=False)
         time.sleep(0.1)
 
         # Detect ball
