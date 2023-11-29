@@ -56,7 +56,7 @@ def search():
     while not detect_:
         # Update image
         nao_drv.get_image()
-        nao_drv.show_image(key=1)     # 1 s
+        nao_drv.show_image(key=1)  # 1 s
         # Check if we should change turn direction
         head_yaw = motion.getAngles("HeadYaw", True)[0]
         print "HeadYaw: ", head_yaw * 180 / np.pi
@@ -65,7 +65,7 @@ def search():
             direction *= -1
         # Turn head
         print "motion = ", motion
-        print "direction = ", direction*0.1
+        print "direction = ", direction * 0.1
         control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=True)
         time.sleep(0.1)
 
@@ -81,7 +81,7 @@ def walk():
     while detect_:
         # Update image
         nao_drv.get_image()
-        nao_drv.show_image(key=1)     # 1 s
+        nao_drv.show_image(key=1)  # 1 s
         # Walk
         control.attain_ball(motion, x, y, w, h, verbose=False)
         # Detect ball
@@ -89,6 +89,22 @@ def walk():
 
     motion.stopMove()
     return
+
+
+def doWait():
+    time_dodo = 5
+    motion.stopMove()
+    motion.rest()
+    time.sleep(time_dodo)
+    event = "go"
+    return event
+
+
+def doStop():
+    motion.stopMove()
+    motion.rest()
+    event = None
+    return event
 
 
 if __name__ == "__main__":

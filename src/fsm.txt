@@ -9,7 +9,7 @@ Stop
 Idle Idle wait doWait
 Idle Search go doWait
 Search Search noDetectBall searchBall
-Search AlignHead detectBall noDetectBall
+Search AlignHead detectBall searchBall
 AlignHead Search noDetectBall alignHead
 AlignHead AlignHead noAlignHeadDetectBall alignHead
 AlignHead AlignBody alignHeadDetectBall alignHead
