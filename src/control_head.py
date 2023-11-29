@@ -138,13 +138,9 @@ def center_ball(motionProxy, px, py, width, height):
 
 def headControl(motionProxy, yaw, pitch, verbose=False):
     """Function used to control the head / Communication with the drivers."""
-    head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
-    if verbose:
-        print "HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi
     fractionMaxSpeed = 0.8
     motionProxy.setAngles(["HeadYaw", "HeadPitch"], [yaw, pitch], fractionMaxSpeed)
     if verbose:
-        time.sleep(0.5) # attendre la fin du deplacement avant de reprendre les donnees
         head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
         print "HeadYaw: ", head_yaw * 180 / np.pi, " / HeadPitch: ", head_pitch * 180 / np.pi
 
@@ -196,6 +192,20 @@ def openEyes(robot_ip, robot_port):
     img_ok, cv_img, image_width, image_height = nao_drv.get_image()
     # nao_drv.show_image(key=1)
     return nao_drv
+
+
+def doWait(motionProxy):
+    global time_dodo
+    motionProxy.stopMove()
+    motionProxy.rest()
+    time.sleep(time_dodo)
+    return
+
+
+def doStop(motionProxy):
+    motionProxy.stopMove()
+    motionProxy.rest()
+    return
 
 
 # Pas besoin d'envoyer l'image au serveur : juste reception des informations
