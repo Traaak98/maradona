@@ -194,20 +194,6 @@ def openEyes(robot_ip, robot_port):
     return nao_drv
 
 
-def doWait(motionProxy):
-    global time_dodo
-    motionProxy.stopMove()
-    motionProxy.rest()
-    time.sleep(time_dodo)
-    return
-
-
-def doStop(motionProxy):
-    motionProxy.stopMove()
-    motionProxy.rest()
-    return
-
-
 # Pas besoin d'envoyer l'image au serveur : juste reception des informations
 """def send_image():
     image = "hihi.jpg"
