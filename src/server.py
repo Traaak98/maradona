@@ -43,6 +43,7 @@ while True:
                 path = os.getcwd()[0:-12]
                 # print(path)
                 image = cv.imread(path + "imgs/out_11212.ppm")
+                # todo changer path
 
                 # MESSAGE :
                 t1 = time() - t0
@@ -52,6 +53,12 @@ while True:
                 txt = txt[2:-1]
 
                 if txt == "REQUEST BALL":
+                    # Check camera
+                    data = sock.recv(buffer_size)
+                    txt = str(data)     # b'blabla' to blabla
+                    txt = txt[2:-1]
+                    # todo if txt== "CAMERA TOP" / DOWN : change camera
+
                     #t2 = time() - t0
                     #print("Avant utilisation modele : ", t2)
                     new_image, detect_, x, y, w, h = detect_ball(image, model)

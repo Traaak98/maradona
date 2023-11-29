@@ -26,9 +26,10 @@ nao_drv = control.openEyes(robot_ip, robot_port)
 
 verbose = True
 
-def recv_data_ball(client):
+def recv_data_ball(client, camera):
     # send request
     client.sendall("REQUEST BALL")
+    # todo ajouter nom camera en entree et en requete
     # receive and store data
     message = client.recv(4096)
     message.decode()
@@ -111,7 +112,7 @@ def alignHead():
 
     if not detect_:
         return "noDetectBall"
-
+    # todo changer camera si pitch trop faible
     if abs(err_x) > 12 or abs(err_y) > 10:
         yaw = 0.05 * err_x / nao_drv.image_width
         pitch = - 0.05 * err_y / nao_drv.image_height
