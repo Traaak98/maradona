@@ -21,7 +21,7 @@ motion = control.wakeUp(robot_ip, robot_port)
 nao_drv = control.openEyes(robot_ip, robot_port)
 
 
-def recv_data(client):
+def recv_data_ball(client):
     # send request
     client.sendall("REQUEST BALL")
     # receive and store data
@@ -37,56 +37,51 @@ def recv_data(client):
     return ok, x, y, w, h
 
 
-def search():
+def search(verbose=False):
     # Get detect bool from image detection
-    print "Client request"
-    detect_, x, y, w, h = recv_data(s)
-    print "detect = ", detect_
-    print "x = ", x
-    print "y = ", y
-    print "w = ", w
-    print "h = ", h
-    print "Answer received"
-
+    detect_, x, y, w, h = False, 0, 0, 0, 0
     direction = 1
+
     while not detect_:
-        # Update image
-        nao_drv.get_image()
-        nao_drv.show_image(key=1)     # 1 s
         # Check if we should change turn direction
         head_yaw = motion.getAngles("HeadYaw", True)[0]
-        print "HeadYaw: ", head_yaw * 180 / np.pi
         # Change direction if we are too close to the limit
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
-        # Turn head
-        print "motion = ", motion
-        print "direction = ", direction*0.1
-        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=True)
-        time.sleep(0.1)
 
+        # Turn head
+        if verbose:
+            print "Moving head : direction = ", direction * 0.05
+        control.headControl(motion, head_yaw + direction * 0.05, 0, verbose=False)
         # Detect ball
-        detect_, x, y, w, h = recv_data(s)
-        print "Detect: ", detect_
+        detect_, x, y, w, h = recv_data_ball(s)
+
+    if verbose:
+        print "detect = ", detect_
+        print "x = ", x
+        print "y = ", y
+        print "w = ", w
+        print "h = ", h
+        print "Answer received"
     return
 
 
 def walk():
     # Get detect bool from image detection
-    detect_, x, y, w, h = recv_data(s)
+    w_image, h_image = 320, 240
+    detect_, x, y, w, h = recv_data_ball(s)
     while detect_:
         # Update image
         nao_drv.get_image()
         nao_drv.show_image(key=1)     # 1 s
         # Walk
-        control.attain_ball(motion, x, y, w, h, verbose=False)
+        control.attain_ball(motion, x, y, w_image, h_image, verbose=False)
         # Detect ball
-        detect_, x, y, w, h = recv_data(s)
+        detect_, x, y, w, h = recv_data_ball(s)
 
     motion.stopMove()
     return
 
 
 if __name__ == "__main__":
-
     search()
