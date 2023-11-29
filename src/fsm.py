@@ -25,11 +25,14 @@ def recv_data(client):
     # send request
     client.sendall("REQUEST BALL")
     # receive and store data
-    ok = client.recv(4096)
-    x = client.recv(4096)
-    y = client.recv(4096)
-    w = client.recv(4096)
-    h = client.recv(4096)
+    message = client.recv(4096)
+    message.decode()
+    message = message.split(";")
+    ok = int(message[0])
+    x = float(message[1])
+    y = float(message[2])
+    w = float(message[3])
+    h = float(message[4])
     # client.sendall("BYE BYE")
     return ok, x, y, w, h
 
@@ -38,6 +41,11 @@ def search():
     # Get detect bool from image detection
     print "Client request"
     detect_, x, y, w, h = recv_data(s)
+    print "detect = ", detect_
+    print "x = ", x
+    print "y = ", y
+    print "w = ", w
+    print "h = ", h
     print "Answer received"
 
     direction = 1
@@ -52,7 +60,9 @@ def search():
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
         # Turn head
-        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=False)
+        print "motion = ", motion
+        print "direction = ", direction*0.1
+        control.headControl(motion, head_yaw + direction * 0.1, 0, verbose=True)
         time.sleep(0.1)
 
         # Detect ball
