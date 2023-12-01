@@ -35,7 +35,7 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 ## Structure du Git
 Le répertoire GitLab contient les dossiers suivants :
 * **images** : contient les images utilisées dans le README.
-* **Yolov8** : contient les images utilisées pour l'entrainement de Yolov3 et le modèle entrainé.
+* **Yolov8** : contient les images utilisées pour l'entrainement de Yolov8 et le modèle entrainé.
 * **src** : contient les fichiers python utilisés pour le projet.
 
 ## Informations générales
