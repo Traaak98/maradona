@@ -57,7 +57,7 @@ La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut main
 graph LR;
     Idle-- wait -->Idle;
     Idle-- go -->Search;
-    Seach-- noDetectBall -->Search;
+    Search-- noDetectBall -->Search;
     Search-- detectBall -->AlignHead;
     AlignHead-- noDetectBall -->Search;
     AlignHead-- noAlignHeadDetectBall -->AlignHead;
