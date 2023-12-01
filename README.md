@@ -53,7 +53,7 @@ La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut main
 * Choix entre les différentes caméra
 
 ## Fonctionnement de la FSM
-'''mermaid
+```mermaid
 graph LR;
     Idle-- wait -->Idle;
     Idle-- go -->Search;
@@ -67,4 +67,4 @@ graph LR;
     WalkToBall-- noDetectBall -->Search;
     WalkToBall-- noAttainBall -->WalkToBall;
     WalkToBall-- attainBall -->Stop;
-'''
+```
