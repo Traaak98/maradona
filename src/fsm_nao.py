@@ -29,7 +29,10 @@ verbose = True
 def recv_data_ball(client, camera):
     # send request
     client.sendall("REQUEST BALL")
-    # todo ajouter nom camera en entree et en requete
+    if camera == "front":
+        client.sendall("FRONT")
+    elif camera == "bottom":
+        client.sendall("BOTTOM")
     # receive and store data
     message = client.recv(4096)
     message.decode()
@@ -103,16 +106,21 @@ def doStop():
 
 def alignHead():
     global verbose
+    pitch_min = -0.4 #todo: trouver valeur pitch min
     if verbose:
         print "--- Align Head ---"
+
     # Center the ball in the image to align the head
-    detect_, x, y, w, h = recv_data_ball(s)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if head_pitch < pitch_min:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    else:
+        detect_, x, y, w, h = recv_data_ball(s, "front")
     err_x = nao_drv.image_width / 2 - x
     err_y = y - nao_drv.image_height / 2
 
     if not detect_:
         return "noDetectBall"
-    # todo changer camera si pitch trop faible
     if abs(err_x) > 12 or abs(err_y) > 10:
         yaw = 0.05 * err_x / nao_drv.image_width
         pitch = - 0.05 * err_y / nao_drv.image_height

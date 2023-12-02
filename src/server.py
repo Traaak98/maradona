@@ -26,6 +26,9 @@ buffer_size = 4096
 model = load_model()
 t0 = time()
 
+# Type de camera :
+camera = ""
+
 while True:
 
     read_sockets, write_sockets, error_sockets = select.select(connected_clients_sockets, [], [])
@@ -42,8 +45,6 @@ while True:
                 # Find image :
                 path = os.getcwd()[0:-12]
                 # print(path)
-                image = cv.imread(path + "imgs/out_11212.ppm")
-                # todo changer path
 
                 # MESSAGE :
                 t1 = time() - t0
@@ -57,14 +58,21 @@ while True:
                     data = sock.recv(buffer_size)
                     txt = str(data)     # b'blabla' to blabla
                     txt = txt[2:-1]
-                    # todo if txt== "CAMERA TOP" / DOWN : change camera
-
+                    if txt == "FRONT":
+                        image = cv.imread(path + "imgs/out_11212.ppm")
+                        camera = "front"
+                    elif txt == "BOTTOM":
+                        image = cv.imread(path + "imgs/out_down_11212.ppm")
+                        camera = "bottom"
                     #t2 = time() - t0
                     #print("Avant utilisation modele : ", t2)
                     new_image, detect_, x, y, w, h = detect_ball(image, model)
                     #t3 = time() - t0
                     #print("Entre modele et imwrite : ", t3)
-                    cv.imwrite(path + "imgs/out_11212_detect.ppm", new_image)
+                    if camera == "front":
+                        cv.imwrite(path + "imgs/out_11212_detect.ppm", new_image)
+                    elif camera == "bottom":
+                        cv.imwrite(path + "imgs/out_down_11212_detect.ppm", new_image)
 
                     #t4 = time() - t0
                     #print("Avant envoi : ", t4)
