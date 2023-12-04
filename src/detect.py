@@ -40,13 +40,13 @@ def detect_ball(image, model):
 
     # Affichage
     if results[0].boxes:
-        detect_ = True
         for result in results:
             nb_detection = result.boxes.shape[0]
             for i in range(nb_detection):
                 cls = int(result.boxes.cls[i].item())
                 name = result.names[cls]
                 if name == "ball":
+                    detect_ = True
                     x = result.boxes.xywh[0][0]
                     y = result.boxes.xywh[0][1]
                     w = result.boxes.xywh[0][2]
