@@ -51,17 +51,15 @@ while True:
                 # print("Avant requete client : ", t1)
                 data = sock.recv(buffer_size)
                 txt = str(data)     # b'blabla' to blabla
-                txt = txt[2:-1]
+                txt1 = txt[2:14]
+                txt2 = txt[15:-1]
 
-                if txt == "REQUEST BALL":
+                if txt1 == "REQUEST BALL":
                     # Check camera
-                    data = sock.recv(buffer_size)
-                    txt = str(data)     # b'blabla' to blabla
-                    txt = txt[2:-1]
-                    if txt == "FRONT":
+                    if txt2 == "FRONT":
                         image = cv.imread(path + "imgs/out_11212.ppm")
                         camera = "front"
-                    elif txt == "BOTTOM":
+                    elif txt2 == "BOTTOM":
                         image = cv.imread(path + "imgs/out_down_11212.ppm")
                         camera = "bottom"
                     #t2 = time() - t0
