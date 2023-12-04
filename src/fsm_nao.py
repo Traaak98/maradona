@@ -24,12 +24,23 @@ motion = control.wakeUp(robot_ip, robot_port)
 # Faire tourner la camera en arriere plan en permanence !
 nao_drv = control.openEyes(robot_ip, robot_port)
 
+# Head_yaw et head_pitch global
+head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+
 verbose = True
+
+# direction rotation tete
+direction = 1
+nb_tour = 0
 
 def recv_data_ball(client, camera):
     # send request
-    client.sendall("REQUEST BALL")
-    # todo ajouter nom camera en entree et en requete
+    if camera == "front":
+        print "FRONT"
+        client.sendall("REQUEST BALL FRONT")
+    elif camera == "bottom":
+        print "BOTTOM"
+        client.sendall("REQUEST BALL BOTTOM")
     # receive and store data
     message = client.recv(4096)
     message.decode()
@@ -46,18 +57,35 @@ def recv_data_ball(client, camera):
 def searchBall():
     if verbose:
         print "--- Search Ball ---"
-    detect_, x, y, w, h = recv_data_ball(s)
-    direction = 1
+
+    # Initialisation position tete
+    global head_yaw, head_pitch, direction, nb_tour
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
+
+    # Detect Ball
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if head_pitch * 180 / np.pi < 24:
+        detect_, x, y, w, h = recv_data_ball(s, "front")
+    else:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    if not detect_:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+
     if not detect_:
         # Check if we should change turn direction
         head_yaw = motion.getAngles("HeadYaw", True)[0]
         # Change direction if we are too close to the limit
         if abs(head_yaw * 180 / np.pi) > 118:
             direction *= -1
+        # Change pitch if we have done 2 turns
+        if nb_tour > 2:
+            head_pitch += 0.1
+            nb_tour = 0
         # Turn head
         if verbose:
             print "Moving head : direction = ", direction * 0.05
-        control.headControl(motion, head_yaw + direction * 0.05, 0, verbose=False)
+        control.headControl(motion, head_yaw + direction * 0.05, head_pitch, verbose=False)
+        head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
         return "noDetectBall"
     else:
         if verbose:
@@ -71,8 +99,15 @@ def searchBall():
 
 
 def walk():
+    global head_yaw, head_pitch
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
+
     # Get detect bool from image detection
-    detect_, x, y, w, h = recv_data_ball(s)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if head_pitch * 180 / np.pi > 24:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    else:
+        detect_, x, y, w, h = recv_data_ball(s, "front")
     while detect_:
         # Update image
         nao_drv.get_image()
@@ -80,14 +115,18 @@ def walk():
         # Walk
         control.attain_ball(motion, x, y, w, h, verbose=False)
         # Detect ball
-        detect_, x, y, w, h = recv_data_ball(s)
-
+        head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+        if head_pitch * 180 / np.pi > 24:
+            detect_, x, y, w, h = recv_data_ball(s, "bottom")
+        else:
+            detect_, x, y, w, h = recv_data_ball(s, "front")
     motion.stopMove()
     return
 
 def doWait():
     time_dodo = 5
     motion.stopMove()
+    control.headControl(motion, 0, 0, verbose=False)
     motion.rest()
     time.sleep(time_dodo)
     event = "go"
@@ -102,17 +141,22 @@ def doStop():
 
 
 def alignHead():
-    global verbose
+    global verbose, head_yaw, head_pitch
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
     if verbose:
         print "--- Align Head ---"
+
     # Center the ball in the image to align the head
-    detect_, x, y, w, h = recv_data_ball(s)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if head_pitch * 180 / np.pi > 24:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    else:
+        detect_, x, y, w, h = recv_data_ball(s, "front")
     err_x = nao_drv.image_width / 2 - x
     err_y = y - nao_drv.image_height / 2
 
     if not detect_:
         return "noDetectBall"
-    # todo changer camera si pitch trop faible
     if abs(err_x) > 12 or abs(err_y) > 10:
         yaw = 0.05 * err_x / nao_drv.image_width
         pitch = - 0.05 * err_y / nao_drv.image_height
@@ -122,12 +166,15 @@ def alignHead():
         head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 
         control.headControl(motion, head_yaw + yaw, head_pitch + pitch, verbose=False)
+        head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
         return "noAlignHeadDetectBall"
     else:
         return "alignHeadDetectBall"
 
 
 def alignBody():
+    global head_yaw, head_pitch
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
     # Tourner le corps du meme angle que la tete
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
     x, y, theta = motion.getRobotPosition(False)
@@ -146,7 +193,12 @@ def alignBody():
         x, y, theta = motion.getRobotPosition(False)
 
     control.headControl(motion, 0, head_pitch, verbose=False)
-    detect_, x, y, w, h = recv_data_ball(s)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if head_pitch * 180 / np.pi > 24:
+        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    else:
+        detect_, x, y, w, h = recv_data_ball(s, "front")
+
     if not detect_:
         if verbose:
             print "We lost the ball while turning the body"
