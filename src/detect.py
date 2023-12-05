@@ -45,7 +45,8 @@ def detect_ball(image, model):
             for i in range(nb_detection):
                 cls = int(result.boxes.cls[i].item())
                 name = result.names[cls]
-                if name == "ball":
+                conf = result.boxes.conf[i]
+                if name == "ball" and conf > 0.5:
                     detect_ = True
                     x = result.boxes.xywh[0][0]
                     y = result.boxes.xywh[0][1]
@@ -53,6 +54,8 @@ def detect_ball(image, model):
                     h = result.boxes.xywh[0][3]
                     cv.rectangle(image, (int(x - w / 2), int(y + h / 2)), (int(x + w / 2), int(y - h / 2)), (0, 255, 0),
                                  2)
+                    cv.putText(image, str(conf), (int(x - w / 2), int(y + h / 2)), cv.FONT_HERSHEY_SIMPLEX, 0.5,
+                                 (0, 255, 0), 1)
     # t2 = time.time()
     # print("Temps affichage : ", t2 - t1)
     return image, detect_, x, y, w, h
