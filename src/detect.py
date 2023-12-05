@@ -46,7 +46,7 @@ def detect_ball(image, model):
                 cls = int(result.boxes.cls[i].item())
                 name = result.names[cls]
                 conf = result.boxes.conf[i]
-                if name == "ball" and conf > 0.5:
+                if name == "ball" and conf > 0.7:
                     detect_ = True
                     x = result.boxes.xywh[0][0]
                     y = result.boxes.xywh[0][1]
