@@ -26,6 +26,7 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 	1. [État du projet](#état-du-projet)
 	2. [Travail effectué](#travail-effectué)
 	3. [Travail en cours](#travail-en-cours)
+    4. [Travail à faire](#travail-à-faire)
 3. [Fonctionnement de la FSM](#fonctionnement-de-la-fsm)
 4. [Guide d'utilisation](#guide-dutilisation)
    1. [Lancer le robot en simulation](#lancer-le-robot-en-simulation)
@@ -51,6 +52,13 @@ La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut main
 ### Travail en cours
 * Mise en place FSM
 * Choix entre les différentes caméra
+
+### Travail à faire
+* Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé
+* Faire en sorte de juste baisser la tête quand on perd la balle
+* Suivre balle en cap aussi 
+* Saut dans le calcul de l'erreur 
+* Mauvais calcul erreur alignement corps tete
 
 ## Fonctionnement de la FSM
 ```mermaid
