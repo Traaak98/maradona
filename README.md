@@ -54,11 +54,10 @@ La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut main
 * Choix entre les différentes caméra
 
 ### Travail à faire
-* Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé
-* Faire en sorte de juste baisser la tête quand on perd la balle
-* Suivre balle en cap aussi 
-* Saut dans le calcul de l'erreur 
-* Mauvais calcul erreur alignement corps tete
+- [ ] Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé.
+- [ ] Suivre balle en cap aussi.
+- [ ] Saut dans le calcul de l'erreur. Vient de la mauvaise détection de la balle.
+- [ ] Passer fsm_old dans fsm et tester.
 
 ## Fonctionnement de la FSM
 ```mermaid
