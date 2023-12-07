@@ -26,6 +26,7 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 	1. [État du projet](#état-du-projet)
 	2. [Travail effectué](#travail-effectué)
 	3. [Travail en cours](#travail-en-cours)
+    4. [Travail à faire](#travail-à-faire)
 3. [Fonctionnement de la FSM](#fonctionnement-de-la-fsm)
 4. [Guide d'utilisation](#guide-dutilisation)
    1. [Lancer le robot en simulation](#lancer-le-robot-en-simulation)
@@ -35,5 +36,42 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 ## Structure du Git
 Le répertoire GitLab contient les dossiers suivants :
 * **images** : contient les images utilisées dans le README.
-* **YoloDataset_simimages** : contient les images utilisées pour l'entrainement de Yolov3 et le modèle entrainé.
+* **Yolov8** : contient les images utilisées pour l'entrainement de Yolov8 et le modèle entrainé.
 * **src** : contient les fichiers python utilisés pour le projet.
+
+## Informations générales
+### État du projet
+La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut maintenant être capable de s'orienter avec les buts.
+
+### Travail effectué
+* Détection de la balle
+* Détection des coins du but
+* Centrer la balle dans l'image
+* Marcher jusqu'à la balle
+
+### Travail en cours
+* Mise en place FSM
+* Choix entre les différentes caméra
+
+### Travail à faire
+- [ ] Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé.
+- [ ] Suivre balle en cap aussi.
+- [ ] Saut dans le calcul de l'erreur. Vient de la mauvaise détection de la balle.
+- [ ] Passer fsm_old dans fsm et tester.
+
+## Fonctionnement de la FSM
+```mermaid
+graph LR;
+    Idle-- wait -->Idle;
+    Idle-- go -->Search;
+    Search-- noDetectBall -->Search;
+    Search-- detectBall -->AlignHead;
+    AlignHead-- noDetectBall -->Search;
+    AlignHead-- noAlignHeadDetectBall -->AlignHead;
+    AlignHead-- alignHeadDetectBall -->AlignBody;
+    AlignBody-- noDetectBall -->Search;
+    AlignBody-- alignBodyDetectBall -->WalkToBall;
+    WalkToBall-- noDetectBall -->Search;
+    WalkToBall-- noAttainBall -->WalkToBall;
+    WalkToBall-- attainBall -->Stop;
+```
