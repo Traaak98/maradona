@@ -2,8 +2,6 @@
 Idle
 Search
 AlignHead
-AlignBody
-WalkToBall
 Stop
 ----- Transitions
 Idle Idle wait doWait
@@ -15,9 +13,7 @@ AlignHead AlignHead noAlignHeadDetectBall alignHead
 AlignHead AlignBody alignHeadDetectBall alignBody
 AlignBody WalkToBall alignBodyDetectBall walkToBall
 WalkToBall Search noDetectBall searchBall
-WalkToBall AlignHead attainBall alignHead
-WalkToBall AlignHead alignBall alignHead
-AlignBody Stop attainBall doStop
+WalkToBall Stop attainBall doStop
 ----- Events
 wait
 go
@@ -26,9 +22,7 @@ noDetectBall
 alignHeadDetectBall
 noAlignHeadDetectBall
 alignBodyDetectBall
-noAttainBall
 attainBall
-alignBall
 ---- Start State
 Idle
 ---- Start Event
