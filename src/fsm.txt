@@ -7,17 +7,17 @@ WalkToBall
 Stop
 ----- Transitions
 Idle Idle wait doWait
-Idle Search go doWait
+Idle Search go searchBall
 Search Search noDetectBall searchBall
-Search AlignHead detectBall searchBall
-AlignHead Search noDetectBall alignHead
+Search AlignHead detectBall alignHead
+AlignHead Search noDetectBall searchBall
 AlignHead AlignHead noAlignHeadDetectBall alignHead
-AlignHead AlignBody alignHeadDetectBall alignHead
-AlignBody Search noDetectBall alignBody
-AlignBody WalkToBall alignBodyDetectBall alignBody
-WalkToBall Search noDetectBall walkToBall
-WalkToBall WalkToBall noAttainBall walkToBall
-WalkToBall Stop attainBall doStop
+AlignHead AlignBody alignHeadDetectBall alignBody
+AlignBody WalkToBall alignBodyDetectBall walkToBall
+WalkToBall Search noDetectBall searchBall
+WalkToBall AlignHead attainBall alignHead
+WalkToBall AlignHead alignBall alignHead
+AlignBody Stop attainBall doStop
 ----- Events
 wait
 go
@@ -28,6 +28,7 @@ noAlignHeadDetectBall
 alignBodyDetectBall
 noAttainBall
 attainBall
+alignBall
 ---- Start State
 Idle
 ---- Start Event

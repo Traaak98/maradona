@@ -48,10 +48,10 @@ def detect_ball(image, model):
                 conf = result.boxes.conf[i]
                 if name == "ball" and conf > 0.7:
                     detect_ = True
-                    x = result.boxes.xywh[0][0]
-                    y = result.boxes.xywh[0][1]
-                    w = result.boxes.xywh[0][2]
-                    h = result.boxes.xywh[0][3]
+                    x = result.boxes[i].xywh[0][0]
+                    y = result.boxes[i].xywh[0][1]
+                    w = result.boxes[i].xywh[0][2]
+                    h = result.boxes[i].xywh[0][3]
                     cv.rectangle(image, (int(x - w / 2), int(y + h / 2)), (int(x + w / 2), int(y - h / 2)), (0, 255, 0),
                                  2)
                     cv.putText(image, str(conf), (int(x - w / 2), int(y + h / 2)), cv.FONT_HERSHEY_SIMPLEX, 0.5,
