@@ -55,9 +55,10 @@ La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut main
 
 ### Travail à faire
 - [ ] Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé.
-- [ ] Suivre balle en cap aussi.
-- [ ] Saut dans le calcul de l'erreur. Vient de la mauvaise détection de la balle.
+- [x] Suivre balle en cap aussi.
+- [x] Saut dans le calcul de l'erreur. Vient de la mauvaise détection de la balle.
 - [ ] Passer fsm_old dans fsm et tester.
+- [ ] Changer *control_head.py* en *utils.py* et mettre recv_data dans utils
 
 ## Fonctionnement de la FSM
 ```mermaid
