@@ -143,12 +143,12 @@ def walkToBall():
 
 
 def doWait():
-    global verbose
+    global verbose, head_yaw, head_pitch
     if verbose:
         print "--- Wait ---"
     time_dodo = 2
     motion.stopMove()
-    control.headControl(motion, 0, 0, verbose=False)
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
     # motion.rest()
     time.sleep(time_dodo)
     return "go"
@@ -188,8 +188,12 @@ def alignHead():
             print "ALIGNING"
             print "Error head : err_x = ", err_x, " / err_y = ", err_y
             print "head_yaw = ", head_yaw * 180 / np.pi, " / head_pitch = ", head_pitch * 180 / np.pi
+            print "yaw = ", yaw * 180 / np.pi, " / pitch = ", pitch * 180 / np.pi
         control.headControl(motion, head_yaw + yaw, head_pitch + pitch, verbose=False)
+        time.sleep(0.05)
         head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+        if verbose:
+            print "head_yaw = ", head_yaw * 180 / np.pi, " / head_pitch = ", head_pitch * 180 / np.pi
         return "noAlignHeadDetectBall"
     else:
         head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
