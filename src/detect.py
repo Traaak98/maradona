@@ -55,7 +55,7 @@ def detect_ball(image, model):
                     cv.rectangle(image, (int(x - w / 2), int(y + h / 2)), (int(x + w / 2), int(y - h / 2)), (0, 255, 0),
                                  2)
                     cv.putText(image, str(conf), (int(x - w / 2), int(y + h / 2)), cv.FONT_HERSHEY_SIMPLEX, 0.5,
-                                 (0, 255, 0), 1)
+                               (0, 255, 0), 1)
     # t2 = time.time()
     # print("Temps affichage : ", t2 - t1)
     return image, detect_, x, y, w, h
@@ -84,7 +84,10 @@ def detect_goal(image, model):
                     y = np.append(y, result.boxes.xywh[0][1])
                     w = np.append(w, result.boxes.xywh[0][2])
                     h = np.append(h, result.boxes.xywh[0][3])
-                    cv.rectangle(image, (int(result.boxes.xywh[0][0] - result.boxes.xywh[0][2] / 2), int(result.boxes.xywh[0][1] + result.boxes.xywh[0][3] / 2)), (int(result.boxes.xywh[0][0] + result.boxes.xywh[0][2] / 2), int(result.boxes.xywh[0][1] - result.boxes.xywh[0][3] / 2)), (0, 255, 0),
+                    cv.rectangle(image, (int(result.boxes.xywh[0][0] - result.boxes.xywh[0][2] / 2),
+                                         int(result.boxes.xywh[0][1] + result.boxes.xywh[0][3] / 2)), (
+                                 int(result.boxes.xywh[0][0] + result.boxes.xywh[0][2] / 2),
+                                 int(result.boxes.xywh[0][1] - result.boxes.xywh[0][3] / 2)), (0, 255, 0),
                                  2)
 
     return image, detect_, x, y, w, h

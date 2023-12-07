@@ -101,11 +101,11 @@ def align(verbose=False):
     # Detect ball
     detect_, x, y, w, h = recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
-    err_y = y - nao_drv.image_height / 2
+    err_y = nao_drv.image_height / 2 - y
     while abs(err_x) > 20 or abs(err_y) > 15:
         if detect_:
             yaw = 0.05 * err_x / nao_drv.image_width
-            pitch = - 0.05 * err_y / nao_drv.image_height
+            pitch = 0.05 * err_y / nao_drv.image_height
             head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
             if verbose:
                 print "ALIGNING"
@@ -118,7 +118,7 @@ def align(verbose=False):
             # Detect ball
             detect_, x, y, w, h = recv_data_ball(s, camera_global)
             err_x = nao_drv.image_width / 2 - x
-            err_y = y - nao_drv.image_height / 2
+            err_y = nao_drv.image_height / 2 - y
         else:
             print "Align head : No ball detected"
             search(verbose=True)
@@ -138,7 +138,7 @@ def alignBody(verbose=False):
     err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
     if verbose:
         print "Erreur angulaire : ", err_theta * 180 / np.pi
-    while abs(err_theta * 180 / np.pi) > 2:
+    while abs(err_theta * 180 / np.pi) > 5:
         if verbose:
             print "ALIGN BODY"
             print "Erreur angulaire : ", err_theta * 180 / np.pi
@@ -162,8 +162,8 @@ def walkToBall(verbose=False):
     # Detect ball
     detect_, x, y, w, h = recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
-    err_y = y - nao_drv.image_height / 2
-    w_max = 60
+    err_y = nao_drv.image_height / 2 - y
+    w_max = 55
     if verbose:
         print "Walk to ball"
         print "x : ", x
@@ -171,28 +171,48 @@ def walkToBall(verbose=False):
     while w < w_max:
         # Detect ball
         detect_, x, y, w, h = recv_data_ball(s, camera_global)
-        if abs(err_x - nao_drv.image_width / 2 - x) > 50:
+        # Pour l instant inutile et non fonctionnel
+        if abs(err_x - nao_drv.image_width / 2 + x) > 100 or abs(err_y - nao_drv.image_height / 2 + y) > 80:
             # Saut dans l'erreur
+            print "align : err_x = ", nao_drv.image_width / 2 - x, " / err_y = ", nao_drv.image_height / 2 - y
             print "STOP Saut dans l'erreur"
+            exit()
 
         err_x = nao_drv.image_width / 2 - x
-        err_y = y - nao_drv.image_height / 2
+        err_y = nao_drv.image_height / 2 - y
+        vx, vy, vtheta = 0.5, 0, 0
+        if abs(err_x) > 10:
+            vtheta = 0.1 * np.sign(err_x)
+        if y < 15:
+            # balle tres basse dans l'image, risques de la perdre
+            # align_head ?
+            # a voir plus tard !
+            # yaw = 0.05 * err_x / nao_drv.image_width
+            print "TEST BOUGER TETE"
+            print "Balle trop basse, bouger tete"
+            print "err_x = ", err_x, " / err_y = ", err_y
+            pitch = 0.05 * err_y / nao_drv.image_height
+            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+            print "y = ", y, "pitch = ", (head_pitch + pitch) * 180 / np.pi
+            control.headControl(motion, head_yaw + 0, head_pitch + pitch, verbose=False)
+            pass
 
-        if abs(err_x) > 100 or abs(err_y) > 100:
+        elif abs(err_x) > 130 or abs(err_y) > 90:
             if verbose:
                 print "Stop walking to center ball"
                 print "align : err_x = ", err_x, " / err_y = ", err_y
-            motion.stopMove()
-            # search(verbose=True)
-            align(verbose=True)
-            alignBody(verbose=True)
+            # motion.stopMove()
+            # # search(verbose=True)
+            # align(verbose=True)
+            # alignBody(verbose=True)
 
-        else:
-            if verbose:
-                print "Marche en cours ; Taille balle : w = ", w
-                print "Position balle : err_x = ", err_x, " / err_y = ", err_y
-            vx, vy, vtheta = 0.5, 0, 0
-            motion.moveToward(vx, vy, vtheta)
+        # else:
+        if verbose:
+            print "* WALKING *"
+            print "Marche en cours ; Taille balle : w = ", w
+            print "Position balle : err_x = ", err_x, " / err_y = ", err_y
+            print "Vitesse angulaire : vtheta = ", vtheta
+        motion.moveToward(vx, vy, vtheta)
 
         if not detect_:
             search(verbose=True)
@@ -205,10 +225,53 @@ def walkToBall(verbose=False):
     return
 
 
+"""
+def walk():
+    global verbose, camera_global, head_yaw, head_pitch
+    # Correct head position
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
+    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    w_max = 55      # entre 55 et 60, voir par rapport au tir
+
+    # Walk until the ball is big enough
+    while w < w_max:
+        # Detect ball
+        detect_, x, y, w, h = recv_data_ball(s, camera_global)
+        err_x = nao_drv.image_width / 2 - x
+        err_y = nao_drv.image_height / 2 - y
+        vx, vy, vtheta = 0.5, 0, 0
+
+        # Si on est decentres en x
+        if abs(err_x) > 10:
+            vtheta = 0.1 * np.sign(err_x)
+
+        # Si la balle est trop basse dans l'image
+        if y < 15:
+            pitch = 0.05 * err_y / nao_drv.image_height
+            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+            if verbose:
+                print "Balle trop basse, pencher la tete"
+                print "y = ", y, "pitch = ", (head_pitch + pitch) * 180 / np.pi
+            control.headControl(motion, head_yaw + 0, head_pitch + pitch, verbose=False)
+
+        if verbose:
+            print "* WALKING *"
+            print "Marche en cours ; Taille balle : w = ", w
+            print "Position balle : err_x = ", err_x, " / err_y = ", err_y
+            print "Vitesse : v = [", vx, vy, vtheta, "]"
+        motion.moveToward(vx, vy, vtheta)
+
+        if not detect_:
+            return "noDetectBall"
+
+    motion.stopMove()
+    return "attainBall"
+"""
+
+
 if __name__ == "__main__":
     search(verbose=True)
     align(verbose=True)
     alignBody(verbose=True)
-    # print "AlignBODY done"
     walkToBall(verbose=True)
     # print "FINISH"
