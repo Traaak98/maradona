@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import control_head as control
+import pickle
 
 # Voir comment lancer automatiquement le serveur de detection
 # Reception des donnes envoyees par la detection
@@ -44,6 +45,22 @@ def recv_data_ball(client, camera):
     h = float(message[4])
     # client.sendall("BYE BYE")
     return ok, x, y, w, h
+
+
+def recv_data_goal(client):
+    # send request
+    client.sendall("REQUEST CORNER")
+    # receive and store data
+    message = pickle.loads(client.recv(4096))
+
+    nb_corner = int(message[0])
+    ok = int(message[1])
+    x = message[2:nb_corner+2]
+    y = message[nb_corner+2:nb_corner*2+2]
+    w = message[nb_corner*2+2:nb_corner*3+2]
+    h = message[nb_corner*3+2:nb_corner*4+2]
+
+    return ok, x, y, w, h, nb_corner
 
 
 def search(verbose=False):
@@ -268,10 +285,11 @@ def walk():
     return "attainBall"
 """
 
+def turnArround(verbos=False):
+    motion.move(5, 10, 3.14 / 2)
+    time.sleep(10)
+    return
+
 
 if __name__ == "__main__":
-    search(verbose=True)
-    align(verbose=True)
-    alignBody(verbose=True)
-    walkToBall(verbose=True)
-    # print "FINISH"
+    recv_data_goal(s)
