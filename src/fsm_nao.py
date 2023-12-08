@@ -4,6 +4,7 @@ import fsm
 
 import numpy as np
 import control_head as control
+import pickle
 
 # Initialisation fsm
 f = fsm.fsm()
@@ -51,6 +52,21 @@ def recv_data_ball(client, camera):
     h = float(message[4])
     # client.sendall("BYE BYE")
     return ok, x, y, w, h
+
+def recv_data_goal(client):
+    # send request
+    client.sendall("REQUEST CORNER")
+    # receive and store data
+    message = pickle.loads(client.recv(4096))
+
+    nb_corner = int(message[0])
+    ok = int(message[1])
+    x = message[2:nb_corner+2]
+    y = message[nb_corner+2:nb_corner*2+2]
+    w = message[nb_corner*2+2:nb_corner*3+2]
+    h = message[nb_corner*3+2:nb_corner*4+2]
+
+    return ok, x, y, w, h, nb_corner
 
 
 def searchBall():
