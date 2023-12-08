@@ -48,23 +48,19 @@ def recv_data_ball(client, camera):
 
 
 def recv_data_goal(client):
-    print "RECV DATA GOAL"
     # send request
     client.sendall("REQUEST CORNER")
     # receive and store data
-    print "message send "
     message = pickle.loads(client.recv(4096))
-    print "message received "
-    print "message av split = ", message
 
-    ok = message[0]
-    x = message[1]
-    y = message[2]
-    w = message[3]
-    h = message[4]
-    nb_corner = message[5]
-    # client.sendall("BYE BYE")
-    return # ok, x, y, w, h, nb_corner
+    nb_corner = int(message[0])
+    ok = int(message[1])
+    x = message[2:nb_corner+2]
+    y = message[nb_corner+2:nb_corner*2+2]
+    w = message[nb_corner*2+2:nb_corner*3+2]
+    h = message[nb_corner*3+2:nb_corner*4+2]
+
+    return ok, x, y, w, h, nb_corner
 
 
 def search(verbose=False):

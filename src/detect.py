@@ -80,7 +80,7 @@ def detect_goal(image, model):
                 cls = int(result.boxes.cls[i].item())
                 name = result.names[cls]
                 conf = result.boxes.conf[i]
-                if name == "goal_corner" and conf > 0.7:
+                if name == "goal_corner" and conf > 0.6:
                     detect_ = True
                     nb_corners += 1
                     x = np.append(x, result.boxes[i].xywh[0][0])

@@ -97,12 +97,9 @@ while True:
                     print("w = ", w)
                     print("h = ", h)
                     print("nb_corner = ", nb_corner)
-                    message = np.vstack((np.array([detect_]), x, y, w, h, np.array([nb_corner])))
-                    print("message = ", message)
+                    message = np.concatenate((np.array([nb_corner]), np.array([detect_]), x, y, w, h), axis=0)
                     sock.send(pickle.dumps(message, protocol=2))
-                    print("message sent")
                     cv.imwrite(path + "imgs/out_11212_detect_goal.ppm", new_image)
-                    print("image saved")
 
                 elif txt == 'BYE':
                     print('got BYE')
