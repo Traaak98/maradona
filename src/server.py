@@ -7,6 +7,8 @@ from random import randint
 from detect import detect_goal, detect_ball, load_model
 import cv2 as cv
 import os
+import numpy as np
+import pickle
 
 HOST = '127.0.0.1'
 PORT = 6666
@@ -53,6 +55,7 @@ while True:
                 txt = str(data)     # b'blabla' to blabla
                 txt1 = txt[2:14]
                 txt2 = txt[15:-1]
+                txt3 = txt[2:-1]
 
                 if txt1 == "REQUEST BALL":
                     # Check camera
@@ -68,9 +71,9 @@ while True:
                     #t3 = time() - t0
                     #print("Entre modele et imwrite : ", t3)
                     if camera == "front":
-                        cv.imwrite(path + "imgs/out_11212_detect.ppm", new_image)
+                        cv.imwrite(path + "imgs/out_11212_detect_ball.ppm", new_image)
                     elif camera == "bottom":
-                        cv.imwrite(path + "imgs/out_down_11212_detect.ppm", new_image)
+                        cv.imwrite(path + "imgs/out_down_11212_detect_ball.ppm", new_image)
 
                     #t4 = time() - t0
                     #print("Avant envoi : ", t4)
@@ -85,11 +88,28 @@ while True:
                     #t5 = time() - t0
                     #print("Fin requete client : ", t5)
 
+                elif txt3 == "REQUEST CORNER":
+                    image = cv.imread(path + "imgs/out_11212.ppm")
+                    new_image, detect_, x, y, w, h, nb_corner = detect_goal(image, model)
+                    print("detect = ", detect_)
+                    print("x = ", x)
+                    print("y = ", y)
+                    print("w = ", w)
+                    print("h = ", h)
+                    print("nb_corner = ", nb_corner)
+                    message = np.vstack((np.array([detect_]), x, y, w, h, np.array([nb_corner])))
+                    print("message = ", message)
+                    sock.send(pickle.dumps(message, protocol=2))
+                    print("message sent")
+                    cv.imwrite(path + "imgs/out_11212_detect_goal.ppm", new_image)
+                    print("image saved")
+
                 elif txt == 'BYE':
                     print('got BYE')
                     sock.shutdown()
 
             except:
+                print("Unexpected error:")
                 sock.close()
                 connected_clients_sockets.remove(sock)
                 print('Client disconnected.')

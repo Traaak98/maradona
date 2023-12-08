@@ -67,30 +67,32 @@ def detect_goal(image, model):
     y = np.array([])
     w = np.array([])
     h = np.array([])
+    nb_corners = 0
 
     # Prediction
     results = model(image)
 
     # Affichage
     if results[0].boxes:
-        detect_ = True
         for result in results:
             nb_detection = result.boxes.shape[0]
             for i in range(nb_detection):
                 cls = int(result.boxes.cls[i].item())
                 name = result.names[cls]
-                if name == "goal_corner":
-                    x = np.append(x, result.boxes.xywh[0][0])
-                    y = np.append(y, result.boxes.xywh[0][1])
-                    w = np.append(w, result.boxes.xywh[0][2])
-                    h = np.append(h, result.boxes.xywh[0][3])
-                    cv.rectangle(image, (int(result.boxes.xywh[0][0] - result.boxes.xywh[0][2] / 2),
-                                         int(result.boxes.xywh[0][1] + result.boxes.xywh[0][3] / 2)), (
-                                 int(result.boxes.xywh[0][0] + result.boxes.xywh[0][2] / 2),
-                                 int(result.boxes.xywh[0][1] - result.boxes.xywh[0][3] / 2)), (0, 255, 0),
+                conf = result.boxes.conf[i]
+                if name == "goal_corner" and conf > 0.7:
+                    detect_ = True
+                    nb_corners += 1
+                    x = np.append(x, result.boxes[i].xywh[0][0])
+                    y = np.append(y, result.boxes[i].xywh[0][1])
+                    w = np.append(w, result.boxes[i].xywh[0][2])
+                    h = np.append(h, result.boxes[i].xywh[0][3])
+                    cv.rectangle(image, (int(result.boxes[i].xywh[0][0] - result.boxes[i].xywh[0][2] / 2),
+                                         int(result.boxes[i].xywh[0][1] + result.boxes[i].xywh[0][3] / 2)), (
+                                 int(result.boxes[i].xywh[0][0] + result.boxes[i].xywh[0][2] / 2),
+                                 int(result.boxes[i].xywh[0][1] - result.boxes[i].xywh[0][3] / 2)), (0, 255, 0),
                                  2)
-
-    return image, detect_, x, y, w, h
+    return image, detect_, x, y, w, h, nb_corners
 
 
 if __name__ == "__main__":
