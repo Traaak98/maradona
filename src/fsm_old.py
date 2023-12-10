@@ -62,6 +62,41 @@ def recv_data_goal(client):
 
     return ok, x, y, w, h, nb_corner
 
+def searchGoal(verbose=False):
+    global head_yaw, head_pitch
+    if verbose:
+        print "SEARCHING GOAL"
+    detect_, x, y, w, h, nb_corner = recv_data_goal(s)
+    if nb_corner >= 3:
+        # Todo : vérifier que le centre du but est quasi au centre de l'image.
+        # Todo : 1. Savoir des trois coins qui sont les deux opposés.
+        # Todo : 2. Calculer le milieu du segment qui les relie.
+        # Todo : 3. Vérifier que ce milieu est quasi au centre de l'image.
+        return Trues
+    else:
+        return False
+
+
+def turnArround(verbos=False):
+    global head_yaw, head_pitch
+
+    # On oriente la tête vers la balle :
+    align(verbose=True) # TODO : à revoir si on code ou si on repasse par l'état de FSM alignHead.
+    motion.headControl(motion, head_yaw, 0, verbose=False)
+
+    # On tourne le corps de 90° vers la balle :
+    motion.moveTo(0, 0, np.pi / 2)
+
+    # On tourne autour de la balle tant que le but n'est pas détecté et centré :
+    while not searchGoal():
+        vx = 5
+        vy = 10
+        vtheta = 3.14 / 2
+        motion.move(vx, vy, vtheta)
+    motion.stopMove()
+    return
+
+
 
 def search(verbose=False):
     # Get detect bool from image detection
@@ -284,11 +319,6 @@ def walk():
     motion.stopMove()
     return "attainBall"
 """
-
-def turnArround(verbos=False):
-    motion.move(5, 10, 3.14 / 2)
-    time.sleep(10)
-    return
 
 
 if __name__ == "__main__":
