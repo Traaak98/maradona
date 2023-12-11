@@ -55,12 +55,13 @@ def recv_data_goal(client):
 
     nb_corner = int(message[0])
     ok = int(message[1])
-    x = message[2:nb_corner+2]
-    y = message[nb_corner+2:nb_corner*2+2]
-    w = message[nb_corner*2+2:nb_corner*3+2]
-    h = message[nb_corner*3+2:nb_corner*4+2]
+    x = message[2:nb_corner + 2]
+    y = message[nb_corner + 2:nb_corner * 2 + 2]
+    w = message[nb_corner * 2 + 2:nb_corner * 3 + 2]
+    h = message[nb_corner * 3 + 2:nb_corner * 4 + 2]
 
     return ok, x, y, w, h, nb_corner
+
 
 def searchGoal(verbose=False):
     global head_yaw, head_pitch
@@ -91,11 +92,11 @@ def searchGoal(verbose=False):
         milieu_x = x[corners_op[0]] + (x[corners_op[1]] - x[corners_op[0]]) / 2
 
         # Vérifier que ce milieu est quasi au centre de l'image.
-        borne_x_min = 10 # TODO : trouver les bonnes bornes
-        borner_x_max = 200
+        borne_x_min = 320 / 2 - 20  # TODO : trouver les bonnes bornes
+        borner_x_max = 320 / 2 + 20
         if borne_x_min < milieu_x < borner_x_max:
             return True
-        else :
+        else:
             return False
     else:
         return False
@@ -105,7 +106,7 @@ def turnArround(verbos=False):
     global head_yaw, head_pitch
 
     # On oriente la tête vers la balle :
-    align(verbose=True) # TODO : à revoir si on code ou si on repasse par l'état de FSM alignHead.
+    align(verbose=True)  # TODO : à revoir si on code ou si on repasse par l'état de FSM alignHead.
     motion.headControl(motion, head_yaw, 0, verbose=False)
 
     # On tourne le corps de 90° vers la balle :
@@ -119,7 +120,6 @@ def turnArround(verbos=False):
         motion.move(vx, vy, vtheta)
     motion.stopMove()
     return
-
 
 
 def search(verbose=False):
@@ -343,7 +343,6 @@ def walk():
     motion.stopMove()
     return "attainBall"
 """
-
 
 if __name__ == "__main__":
     recv_data_goal(s)
