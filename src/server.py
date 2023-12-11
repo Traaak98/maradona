@@ -67,7 +67,6 @@ while True:
                         camera = "bottom"
                     #t2 = time() - t0
                     #print("Avant utilisation modele : ", t2)
-                    new_image, detect_, x, y, w, h = detect_ball(image, model)
                     #t3 = time() - t0
                     #print("Entre modele et imwrite : ", t3)
                     if camera == "front":

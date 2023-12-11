@@ -38,6 +38,8 @@ def recv_data_ball(client, camera):
     # print "message received "
     message.decode()
     message = message.split(";")
+    if message == ['']:
+        return False, 0, 0, 0, 0
     ok = int(message[0])
     x = float(message[1])
     y = float(message[2])
@@ -69,9 +71,13 @@ def searchGoal(verbose=False):
         print "SEARCHING GOAL"
     detect_, x, y, w, h, nb_corner = recv_data_goal(s)
     if nb_corner >= 3:
-        # Calcul des différences selon y pour trouver les deux coins opposés.
+        if verbose:
+            print "GOAL FOUND"
+        # Calcul des differences selon y pour trouver les deux coins opposes.
         diff = np.array([y[0] - y[1], y[0] - y[2], y[1] - y[2]])
         id = np.argmax(diff)
+        if verbose:
+            print "id = ", id
         if id == 0:
             if x[0] < x[1]:
                 corners_op = np.array([0, 1])
@@ -84,41 +90,70 @@ def searchGoal(verbose=False):
                 corners_op = np.array([2, 0])
         else:
             if x[1] < x[2]:
-                corner_op = np.array([1, 2])
+                corners_op = np.array([1, 2])
             else:
-                corner_op = np.array([2, 1])
+                corners_op = np.array([2, 1])
 
-        # Calcul milieu du segment entre les deux coins opposés.
+        # Calcul milieu du segment entre les deux coins opposes.
         milieu_x = x[corners_op[0]] + (x[corners_op[1]] - x[corners_op[0]]) / 2
 
-        # Vérifier que ce milieu est quasi au centre de l'image.
+        if verbose:
+            print "milieu_x = ", milieu_x
+
+        # Verifier que ce milieu est quasi au centre de l'image.
         borne_x_min = 320 / 2 - 20  # TODO : trouver les bonnes bornes
         borner_x_max = 320 / 2 + 20
         if borne_x_min < milieu_x < borner_x_max:
+            if verbose:
+                print "GOAL CENTERED"
             return True
         else:
+            if verbose:
+                print "GOAL NOT CENTERED"
             return False
     else:
+        if verbose:
+            print "NO GOAL"
         return False
 
 
-def turnArround(verbos=False):
+def turnArround(verbose=False):
     global head_yaw, head_pitch
 
-    # On oriente la tête vers la balle :
-    align(verbose=True)  # TODO : à revoir si on code ou si on repasse par l'état de FSM alignHead.
-    motion.headControl(motion, head_yaw, 0, verbose=False)
+    if verbose:
+        print "TURNING AROUND"
 
-    # On tourne le corps de 90° vers la balle :
-    motion.moveTo(0, 0, np.pi / 2)
+    # On oriente la tete vers la balle :
+    align(verbose=True)  # TODO : a revoir si on code ou si on repasse par l'etat de FSM alignHead.
+    control.headControl(motion, head_yaw, 0, verbose=False)
+    head_pitch = 0
 
-    # On tourne autour de la balle tant que le but n'est pas détecté et centré :
+    if verbose:
+        print "HEAD GOOD"
+
+    # On tourne le corps de 90 vers la balle :
+    motion.moveTo(0, 0, np.pi)
+
+    if verbose:
+        print "BODY GOOD"
+    time.sleep(5)
+    control.headControl(motion, head_yaw - np.pi/2, head_pitch, verbose=False)
+
+    if verbose:
+        print "HEAD GOOD"
+    time.sleep(5)
+
+    # On tourne autour de la balle tant que le but n'est pas detecte et centre :
     while not searchGoal():
+        if verbose:
+            print "MOVE"
         vx = 5
         vy = 10
-        vtheta = 3.14 / 2
+        vtheta = -3.14 / 2
         motion.move(vx, vy, vtheta)
     motion.stopMove()
+    if verbose:
+        print "END TURNING AROUND"
     return
 
 
@@ -239,7 +274,7 @@ def walkToBall(verbose=False):
     detect_, x, y, w, h = recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
-    w_max = 55
+    w_max = 50
     if verbose:
         print "Walk to ball"
         print "x : ", x
@@ -252,7 +287,6 @@ def walkToBall(verbose=False):
             # Saut dans l'erreur
             print "align : err_x = ", nao_drv.image_width / 2 - x, " / err_y = ", nao_drv.image_height / 2 - y
             print "STOP Saut dans l'erreur"
-            exit()
 
         err_x = nao_drv.image_width / 2 - x
         err_y = nao_drv.image_height / 2 - y
@@ -345,4 +379,8 @@ def walk():
 """
 
 if __name__ == "__main__":
-    recv_data_goal(s)
+    search(verbose=True)
+    align(verbose=True)
+    alignBody(verbose=True)
+    walkToBall(verbose=True)
+    turnArround(verbose=True)
