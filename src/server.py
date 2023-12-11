@@ -67,6 +67,13 @@ while True:
                         camera = "bottom"
                     #t2 = time() - t0
                     #print("Avant utilisation modele : ", t2)
+                    print("camera = ", image)
+                    new_image, detect_, x, y, w, h = detect_ball(image, model)
+                    if image is None:
+                        new_image, detect_, x, y, w, h = None, False, 0, 0, 0, 0
+                        message = b"%d;%2f;%2f;%2f;%.2f" % (detect_, x, y, w, h)
+                        sock.send(message)
+                        continue
                     #t3 = time() - t0
                     #print("Entre modele et imwrite : ", t3)
                     if camera == "front":

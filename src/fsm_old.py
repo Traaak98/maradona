@@ -38,8 +38,6 @@ def recv_data_ball(client, camera):
     # print "message received "
     message.decode()
     message = message.split(";")
-    if message == ['']:
-        return False, 0, 0, 0, 0
     ok = int(message[0])
     x = float(message[1])
     y = float(message[2])
@@ -123,33 +121,29 @@ def turnArround(verbose=False):
     if verbose:
         print "TURNING AROUND"
 
-    # On oriente la tete vers la balle :
-    align(verbose=True)  # TODO : a revoir si on code ou si on repasse par l'etat de FSM alignHead.
-    control.headControl(motion, head_yaw, 0, verbose=False)
-    head_pitch = 0
-
-    if verbose:
-        print "HEAD GOOD"
-
     # On tourne le corps de 90 vers la balle :
-    motion.moveTo(0, 0, np.pi)
+    motion.moveTo(0, 0, -(np.pi + 0.1))
 
     if verbose:
         print "BODY GOOD"
+
     time.sleep(5)
-    control.headControl(motion, head_yaw - np.pi/2, head_pitch, verbose=False)
+    control.headControl(motion, head_yaw + np.pi/8, 0, verbose=False)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 
     if verbose:
         print "HEAD GOOD"
     time.sleep(5)
 
+    align_ = False
+
     # On tourne autour de la balle tant que le but n'est pas detecte et centre :
-    while not searchGoal():
+    while not searchGoal(verbose=True):
         if verbose:
             print "MOVE"
-        vx = 5
+        vx = 0
         vy = 10
-        vtheta = -3.14 / 2
+        vtheta = 3.14 / 2
         motion.move(vx, vy, vtheta)
     motion.stopMove()
     if verbose:
