@@ -68,11 +68,35 @@ def searchGoal(verbose=False):
         print "SEARCHING GOAL"
     detect_, x, y, w, h, nb_corner = recv_data_goal(s)
     if nb_corner >= 3:
-        # Todo : vérifier que le centre du but est quasi au centre de l'image.
-        # Todo : 1. Savoir des trois coins qui sont les deux opposés.
-        # Todo : 2. Calculer le milieu du segment qui les relie.
-        # Todo : 3. Vérifier que ce milieu est quasi au centre de l'image.
-        return Trues
+        # Calcul des différences selon y pour trouver les deux coins opposés.
+        diff = np.array([y[0] - y[1], y[0] - y[2], y[1] - y[2]])
+        id = np.argmax(diff)
+        if id == 0:
+            if x[0] < x[1]:
+                corners_op = np.array([0, 1])
+            else:
+                corners_op = np.array([1, 0])
+        elif id == 1:
+            if x[0] < x[2]:
+                corners_op = np.array([0, 2])
+            else:
+                corners_op = np.array([2, 0])
+        else:
+            if x[1] < x[2]:
+                corner_op = np.array([1, 2])
+            else:
+                corner_op = np.array([2, 1])
+
+        # Calcul milieu du segment entre les deux coins opposés.
+        milieu_x = x[corners_op[0]] + (x[corners_op[1]] - x[corners_op[0]]) / 2
+
+        # Vérifier que ce milieu est quasi au centre de l'image.
+        borne_x_min = 10 # TODO : trouver les bonnes bornes
+        borner_x_max = 200
+        if borne_x_min < milieu_x < borner_x_max:
+            return True
+        else :
+            return False
     else:
         return False
 
