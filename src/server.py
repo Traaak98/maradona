@@ -96,6 +96,11 @@ while True:
 
                 elif txt3 == "REQUEST CORNER":
                     image = cv.imread(path + "imgs/out_11212.ppm")
+                    if image is None:
+                        new_image, detect_, x, y, w, h, nb_corner = None, False, np.array([]), np.array([]), np.array([]), np.array([]), 0
+                        message = np.concatenate((np.array([nb_corner]), np.array([detect_]), x, y, w, h), axis=0)
+                        sock.send(pickle.dumps(message, protocol=2))
+                        continue
                     new_image, detect_, x, y, w, h, nb_corner = detect_goal(image, model)
                     print("detect = ", detect_)
                     print("x = ", x)

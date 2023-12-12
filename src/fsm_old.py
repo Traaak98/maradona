@@ -115,22 +115,85 @@ def searchGoal(verbose=False):
         return False
 
 
+def align_x(verbose=False):
+    global camera_global, head_yaw, head_pitch
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
+    # Center the ball in the image to align the head
+    # Detect ball
+    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    err_x = nao_drv.image_width / 2 - x
+    while abs(err_x) > 20:
+        if detect_:
+            yaw = 0.05 * err_x / nao_drv.image_width
+            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+            if verbose:
+                print "ALIGNING"
+                print "Error head : err_x = ", err_x
+                print "x : ", x
+                # print "Moving head : yaw = ", yaw, " / pitch = ", pitch
+                print "head_yaw = ", head_yaw * 180 / np.pi
+
+            control.headControl(motion, head_yaw + yaw, head_pitch, verbose=False)
+            # Detect ball
+            detect_, x, y, w, h = recv_data_ball(s, camera_global)
+            err_x = nao_drv.image_width / 2 - x
+        else:
+            print "Align head : No ball detected"
+            search(verbose=True)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if verbose:
+        print "Ball centered"
+        print "____________________________________________________________________________"
+
+    return
+
+def alignBody_end(verbose=False):
+    global camera_global, head_yaw, head_pitch
+    control.headControl(motion, head_yaw, head_pitch, verbose=False)
+    # Tourner le corps du meme angle que la tete
+    # head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    x, y, theta = motion.getRobotPosition(False)
+    err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
+    if verbose:
+        print "Erreur angulaire : ", err_theta * 180 / np.pi
+    while abs(err_theta * 180 / np.pi) > 10:
+        if verbose:
+            print "ALIGN BODY"
+            print "Erreur angulaire : ", err_theta * 180 / np.pi
+
+        motion.moveTo(0, 0, 0.1 * np.sign(err_theta))
+        x, y, theta = motion.getRobotPosition(False)
+        err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
+    control.headControl(motion, 0, head_pitch, verbose=False)
+    # print "After Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    if verbose:
+        print "Body aligned"
+        print "____________________________________________________________________________"
+    return
+
 def turnArround(verbose=False):
     global head_yaw, head_pitch
 
     if verbose:
         print "TURNING AROUND"
 
+    # TODO : bien se replacer au milieu et face a la balle
+    align_x(verbose=True)
+    alignBody_end(verbose=True)
     control.headControl(motion, head_yaw, 0, verbose=False)
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+
+    if verbose:
+        print "BODY GOOD"
 
     # On tourne autour de la balle tant que le but n'est pas detecte et centre :
     while not searchGoal(verbose=True):
         if verbose:
             print "MOVE"
         vx = 0
-        vy = 20
-        vtheta = -3.14 / 2
+        vy = -0.6
+        vtheta = 0.05
         motion.move(vx, vy, vtheta)
     motion.stopMove()
     if verbose:
@@ -255,7 +318,7 @@ def walkToBall(verbose=False):
     detect_, x, y, w, h = recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
-    w_max = 50
+    w_max = 45
     if verbose:
         print "Walk to ball"
         print "x : ", x
