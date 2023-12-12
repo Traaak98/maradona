@@ -53,6 +53,7 @@ def recv_data_ball(client, camera):
     # client.sendall("BYE BYE")
     return ok, x, y, w, h
 
+
 def recv_data_goal(client):
     # send request
     client.sendall("REQUEST CORNER")

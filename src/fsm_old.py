@@ -242,49 +242,6 @@ def walkToBall(verbose=False):
     return
 
 
-"""
-def walk():
-    global verbose, camera_global, head_yaw, head_pitch
-    # Correct head position
-    control.headControl(motion, head_yaw, head_pitch, verbose=False)
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
-    w_max = 55      # entre 55 et 60, voir par rapport au tir
-
-    # Walk until the ball is big enough
-    while w < w_max:
-        # Detect ball
-        detect_, x, y, w, h = recv_data_ball(s, camera_global)
-        err_x = nao_drv.image_width / 2 - x
-        err_y = nao_drv.image_height / 2 - y
-        vx, vy, vtheta = 0.5, 0, 0
-
-        # Si on est decentres en x
-        if abs(err_x) > 10:
-            vtheta = 0.1 * np.sign(err_x)
-
-        # Si la balle est trop basse dans l'image
-        if y < 15:
-            pitch = 0.05 * err_y / nao_drv.image_height
-            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
-            if verbose:
-                print "Balle trop basse, pencher la tete"
-                print "y = ", y, "pitch = ", (head_pitch + pitch) * 180 / np.pi
-            control.headControl(motion, head_yaw + 0, head_pitch + pitch, verbose=False)
-
-        if verbose:
-            print "* WALKING *"
-            print "Marche en cours ; Taille balle : w = ", w
-            print "Position balle : err_x = ", err_x, " / err_y = ", err_y
-            print "Vitesse : v = [", vx, vy, vtheta, "]"
-        motion.moveToward(vx, vy, vtheta)
-
-        if not detect_:
-            return "noDetectBall"
-
-    motion.stopMove()
-    return "attainBall"
-"""
-
 def turnArround(verbos=False):
     motion.move(5, 10, 3.14 / 2)
     time.sleep(10)
