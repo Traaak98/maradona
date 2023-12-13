@@ -2,6 +2,8 @@ import socket
 import time
 
 import numpy as np
+import cv2
+
 import control_head as control
 import pickle
 
@@ -147,6 +149,7 @@ def align_x(verbose=False):
 
     return
 
+
 def alignBody_end(verbose=False):
     global camera_global, head_yaw, head_pitch
     control.headControl(motion, head_yaw, head_pitch, verbose=False)
@@ -156,12 +159,12 @@ def alignBody_end(verbose=False):
     err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
     if verbose:
         print "Erreur angulaire : ", err_theta * 180 / np.pi
-    while abs(err_theta * 180 / np.pi) > 10:
+    while abs(err_theta * 180 / np.pi) > 5:
         if verbose:
             print "ALIGN BODY"
             print "Erreur angulaire : ", err_theta * 180 / np.pi
 
-        motion.moveTo(0, 0, 0.1 * np.sign(err_theta))
+        motion.moveTo(0, 0, 0.05 * np.sign(err_theta))
         x, y, theta = motion.getRobotPosition(False)
         err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
     control.headControl(motion, 0, head_pitch, verbose=False)
@@ -172,17 +175,19 @@ def alignBody_end(verbose=False):
         print "____________________________________________________________________________"
     return
 
+
 def turnArround(verbose=False):
     global head_yaw, head_pitch
 
     if verbose:
         print "TURNING AROUND"
 
-    # TODO : bien se replacer au milieu et face a la balle
     align_x(verbose=True)
     alignBody_end(verbose=True)
     control.headControl(motion, head_yaw, 0, verbose=False)
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+
+    l_x, l_y = [], []
 
     if verbose:
         print "BODY GOOD"
@@ -195,6 +200,12 @@ def turnArround(verbose=False):
         vy = -0.6
         vtheta = 0.05
         motion.move(vx, vy, vtheta)
+        x, y, theta = motion.getRobotPosition(False)
+        print "Position : ", x, y, theta
+        l_x.append(x)
+        l_y.append(y)
+
+    np.savez("data.npz", x=l_x, y=l_y)
     motion.stopMove()
     if verbose:
         print "END TURNING AROUND"
@@ -378,49 +389,6 @@ def walkToBall(verbose=False):
     # alignBody(verbose=True)
     return
 
-
-"""
-def walk():
-    global verbose, camera_global, head_yaw, head_pitch
-    # Correct head position
-    control.headControl(motion, head_yaw, head_pitch, verbose=False)
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
-    w_max = 55      # entre 55 et 60, voir par rapport au tir
-
-    # Walk until the ball is big enough
-    while w < w_max:
-        # Detect ball
-        detect_, x, y, w, h = recv_data_ball(s, camera_global)
-        err_x = nao_drv.image_width / 2 - x
-        err_y = nao_drv.image_height / 2 - y
-        vx, vy, vtheta = 0.5, 0, 0
-
-        # Si on est decentres en x
-        if abs(err_x) > 10:
-            vtheta = 0.1 * np.sign(err_x)
-
-        # Si la balle est trop basse dans l'image
-        if y < 15:
-            pitch = 0.05 * err_y / nao_drv.image_height
-            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
-            if verbose:
-                print "Balle trop basse, pencher la tete"
-                print "y = ", y, "pitch = ", (head_pitch + pitch) * 180 / np.pi
-            control.headControl(motion, head_yaw + 0, head_pitch + pitch, verbose=False)
-
-        if verbose:
-            print "* WALKING *"
-            print "Marche en cours ; Taille balle : w = ", w
-            print "Position balle : err_x = ", err_x, " / err_y = ", err_y
-            print "Vitesse : v = [", vx, vy, vtheta, "]"
-        motion.moveToward(vx, vy, vtheta)
-
-        if not detect_:
-            return "noDetectBall"
-
-    motion.stopMove()
-    return "attainBall"
-"""
 
 if __name__ == "__main__":
     search(verbose=True)
