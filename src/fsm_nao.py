@@ -34,6 +34,40 @@ state = None
 direction = 1
 nb_tour = 0
 
+def recv_data_ball(client, camera):
+    # send request
+    if camera == "front":
+        client.sendall("REQUEST BALL FRONT")
+    elif camera == "bottom":
+        client.sendall("REQUEST BALL BOTTOM")
+    # receive and store data
+    message = client.recv(4096)
+    message.decode()
+    message = message.split(";")
+    ok = int(message[0])
+    x = float(message[1])
+    y = float(message[2])
+    w = float(message[3])
+    h = float(message[4])
+    # client.sendall("BYE BYE")
+    return ok, x, y, w, h
+
+
+def recv_data_goal(client):
+    # send request
+    client.sendall("REQUEST CORNER")
+    # receive and store data
+    message = pickle.loads(client.recv(4096))
+
+    nb_corner = int(message[0])
+    ok = int(message[1])
+    x = message[2:nb_corner+2]
+    y = message[nb_corner+2:nb_corner*2+2]
+    w = message[nb_corner*2+2:nb_corner*3+2]
+    h = message[nb_corner*3+2:nb_corner*4+2]
+
+    return ok, x, y, w, h, nb_corner
+
 
 def searchBall():
     # Initialisation position tete
@@ -245,6 +279,17 @@ def turnArround():
     if verbose:
         print "END TURNING AROUND"
     return "detectGoal"
+
+def doShoot():
+    global verbose, state
+    state = "shoot"
+    if verbose:
+        print "SHOOT"
+    # verifier alignement corps / balle
+    motion.move(5, 0, 0)
+    t_stop = 11
+    time.sleep(t_stop)
+    return "goal"
 
 
 
