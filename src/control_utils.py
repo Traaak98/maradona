@@ -283,11 +283,11 @@ def searchGoal(s, verbose=False):
         return False
 
 
-def alignBody_end(head_yaw, head_pitch, verbose=False):
-    headControl(motion, head_yaw, head_pitch, verbose=False)
+def alignBody_end(motionProxy, head_yaw, head_pitch, verbose=False):
+    headControl(motionProxy, head_yaw, head_pitch, verbose=False)
     # Tourner le corps du meme angle que la tete
-    # head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
-    x, y, theta = motion.getRobotPosition(False)
+    # head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
+    x, y, theta = motionProxy.getRobotPosition(False)
     err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
     if verbose:
         print "Erreur angulaire : ", err_theta * 180 / np.pi
@@ -296,20 +296,20 @@ def alignBody_end(head_yaw, head_pitch, verbose=False):
             print "ALIGN BODY"
             print "Erreur angulaire : ", err_theta * 180 / np.pi
 
-        motion.moveTo(0, 0, 0.05 * np.sign(err_theta))
-        x, y, theta = motion.getRobotPosition(False)
+        motionProxy.moveTo(0, 0, 0.05 * np.sign(err_theta))
+        x, y, theta = motionProxy.getRobotPosition(False)
         err_theta = 2 * np.arctan(np.tan((head_yaw - theta) / 2))
-    headControl(motion, 0, head_pitch, verbose=False)
+    headControl(motionProxy, 0, head_pitch, verbose=False)
     # print "After Robot Position: ", theta * 180 / np.pi, ", ", head_yaw * 180 / np.pi
-    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
     if verbose:
         print "Body aligned"
         print "____________________________________________________________________________"
     return
 
 
-def align_x(s, camera_global, head_yaw, head_pitch, verbose=False):
-    headControl(motion, head_yaw, head_pitch, verbose=False)
+def align_x(motionProxy, nao_drv, s, camera_global, head_yaw, head_pitch, verbose=False):
+    headControl(motionProxy, head_yaw, head_pitch, verbose=False)
     # Center the ball in the image to align the head
     # Detect ball
     detect_, x, y, w, h = recv_data_ball(s, camera_global)
@@ -317,7 +317,7 @@ def align_x(s, camera_global, head_yaw, head_pitch, verbose=False):
     while abs(err_x) > 20:
         if detect_:
             yaw = 0.05 * err_x / nao_drv.image_width
-            head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+            head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
             if verbose:
                 print "ALIGNING"
                 print "Error head : err_x = ", err_x
@@ -325,14 +325,14 @@ def align_x(s, camera_global, head_yaw, head_pitch, verbose=False):
                 # print "Moving head : yaw = ", yaw, " / pitch = ", pitch
                 print "head_yaw = ", head_yaw * 180 / np.pi
 
-            headControl(motion, head_yaw + yaw, head_pitch, verbose=False)
+            headControl(motionProxy, head_yaw + yaw, head_pitch, verbose=False)
             # Detect ball
             detect_, x, y, w, h = recv_data_ball(s, camera_global)
             err_x = nao_drv.image_width / 2 - x
         else:
             print "Align head : No ball detected"
             # search(verbose=True)
-    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+    head_yaw, head_pitch = motionProxy.getAngles(["HeadYaw", "HeadPitch"], True)
     if verbose:
         print "Ball centered"
         print "____________________________________________________________________________"

@@ -5,7 +5,7 @@ AlignHead
 AlignBody
 WalkToBall
 Trun
-Shot
+Shoot
 Stop
 ----- Transitions
 Idle Idle wait doWait
@@ -18,8 +18,8 @@ AlignHead AlignBody alignHeadDetectBall alignBody
 AlignBody WalkToBall alignBodyDetectBall walkToBall
 WalkToBall Search noDetectBall searchBall
 WalkToBall Turn attainBall turnArround
-Turn Shot detectGoal doShot
-Shot Stop goal doStop
+Turn Shoot detectGoal doShoot
+Shoot Stop goal doStop
 ----- Events
 wait
 go
