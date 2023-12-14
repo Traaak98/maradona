@@ -2,6 +2,10 @@
 Idle
 Search
 AlignHead
+AlignBody
+WalkToBall
+Trun
+Shot
 Stop
 ----- Transitions
 Idle Idle wait doWait
@@ -13,7 +17,9 @@ AlignHead AlignHead noAlignHeadDetectBall alignHead
 AlignHead AlignBody alignHeadDetectBall alignBody
 AlignBody WalkToBall alignBodyDetectBall walkToBall
 WalkToBall Search noDetectBall searchBall
-WalkToBall Stop attainBall doStop
+WalkToBall Turn attainBall turnArround
+Turn Shot detectGoal doShot
+Shot Stop goal doStop
 ----- Events
 wait
 go
@@ -23,6 +29,8 @@ alignHeadDetectBall
 noAlignHeadDetectBall
 alignBodyDetectBall
 attainBall
+detectGoal
+goal
 ---- Start State
 Idle
 ---- Start Event

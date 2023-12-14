@@ -3,7 +3,7 @@ import time
 import fsm
 
 import numpy as np
-import control_head as control
+import control_utils as control
 import pickle
 
 # Initialisation fsm
@@ -25,7 +25,7 @@ motion = control.wakeUp(robot_ip, robot_port)
 nao_drv = control.openEyes(robot_ip, robot_port)
 
 # Variables globales
-# head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 camera_global = "front"
 verbose = True
 state = None
@@ -35,45 +35,12 @@ direction = 1
 nb_tour = 0
 
 
-def recv_data_ball(client, camera):
-    # send request
-    if camera == "front":
-        client.sendall("REQUEST BALL FRONT")
-    elif camera == "bottom":
-        client.sendall("REQUEST BALL BOTTOM")
-    # receive and store data
-    message = client.recv(4096)
-    message.decode()
-    message = message.split(";")
-    ok = int(message[0])
-    x = float(message[1])
-    y = float(message[2])
-    w = float(message[3])
-    h = float(message[4])
-    # client.sendall("BYE BYE")
-    return ok, x, y, w, h
-
-def recv_data_goal(client):
-    # send request
-    client.sendall("REQUEST CORNER")
-    # receive and store data
-    message = pickle.loads(client.recv(4096))
-
-    nb_corner = int(message[0])
-    ok = int(message[1])
-    x = message[2:nb_corner+2]
-    y = message[nb_corner+2:nb_corner*2+2]
-    w = message[nb_corner*2+2:nb_corner*3+2]
-    h = message[nb_corner*3+2:nb_corner*4+2]
-
-    return ok, x, y, w, h, nb_corner
-
-
 def searchBall():
     # Initialisation position tete
-    global direction, nb_tour, camera_global, verbose
+    global direction, nb_tour, camera_global, verbose, state, head_yaw, head_pitch
+    state = "searchBall"
 
-    detect_, x, y, w, h = recv_data_ball(s, "bottom")
+    detect_, x, y, w, h = control.recv_data_ball(s, "bottom")
     if detect_:
         camera_global = "bottom"
         if verbose:
@@ -86,7 +53,7 @@ def searchBall():
             print "Found Ball"
         return "detectBall"
 
-    detect_, x, y, w, h = recv_data_ball(s, "front")
+    detect_, x, y, w, h = control.recv_data_ball(s, "front")
     if detect_:
         camera_global = "front"
         if verbose:
@@ -120,17 +87,18 @@ def searchBall():
 
 
 def walkToBall():
-    global camera_global, verbose, state
+    global camera_global, verbose, state, head_yaw, head_pitch
+    state = "walkToBall"
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     # Detect ball
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
     if not detect_:
         return "noDetectBall"
     w_max = 60
 
     while w < w_max:
-        detect_, x, y, w, h = recv_data_ball(s, camera_global)
+        detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
         if not detect_:
             motion.stopMove()
             return "noDetectBall"
@@ -161,7 +129,6 @@ def walkToBall():
             print "Vitesse : v = [", vx, vy, vtheta, "]"
         motion.moveToward(vx, vy, vtheta)
     motion.stopMove()
-    state = "attainBall"
     return "attainBall"
 
 
@@ -187,11 +154,12 @@ def doStop():
 
 
 def alignHead():
-    global verbose, camera_global
+    global verbose, camera_global, state, head_yaw, head_pitch
+    state = "alignHead"
 
     # Center the ball in the image to align the head
     # Detect ball
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
 
@@ -218,7 +186,8 @@ def alignHead():
 
 
 def alignBody():
-    global camera_global, verbose, state
+    global camera_global, verbose, state, head_yaw, head_pitch
+    state = "alignBody"
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
@@ -242,10 +211,41 @@ def alignBody():
     control.headControl(motion, 0, head_pitch, verbose=False)
     # head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 
-    if state == "attainBall":
-        return "attainBall"
-    else:
-        return "alignBodyDetectBall"
+    return "alignBodyDetectBall"
+
+
+def turnArround():
+    global head_yaw, head_pitch, state, verbose
+    state = "turnArround"
+
+    if verbose:
+        print "TURNING AROUND"
+
+    control.align_x(s, camera_global, head_yaw, head_pitch, verbose=verbose)
+    control.alignBody_end(head_yaw, head_pitch, verbose=verbose)
+    control.headControl(motion, head_yaw, 0, verbose=False)
+    head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+
+    if verbose:
+        print "BODY GOOD"
+
+    # On tourne autour de la balle tant que le but n'est pas detecte et centre :
+    while not control.searchGoal(s, verbose=verbose):
+        if verbose:
+            print "MOVE"
+        vx = 0
+        vy = -0.6
+        vtheta = 0.05
+        motion.move(vx, vy, vtheta)
+        x, y, theta = motion.getRobotPosition(False)
+        if verbose:
+            print "Position : ", x, y, theta
+
+    motion.stopMove()
+    if verbose:
+        print "END TURNING AROUND"
+    return "detectGoal"
+
 
 
 if __name__ == "__main__":
