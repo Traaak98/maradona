@@ -101,8 +101,8 @@ def searchGoal(verbose=False):
             print "milieu_x = ", milieu_x
 
         # Verifier que ce milieu est quasi au centre de l'image.
-        borne_x_min = 320 / 2 - 20  # TODO : trouver les bonnes bornes
-        borner_x_max = 320 / 2 + 20
+        borne_x_min = 240 / 2 - 20  # TODO : trouver les bonnes bornes
+        borner_x_max = 240 / 2 + 20
         if borne_x_min < milieu_x < borner_x_max:
             if verbose:
                 print "GOAL CENTERED"
@@ -287,6 +287,7 @@ def align(verbose=False):
             err_y = nao_drv.image_height / 2 - y
         else:
             print "Align head : No ball detected"
+            exit()
             search(verbose=True)
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
     if verbose:
@@ -390,9 +391,21 @@ def walkToBall(verbose=False):
     return
 
 
+def shoot():
+    print "SHOOT"
+    # verifier alignement corps / balle
+    motion.move(5, 0, 0)
+    t_stop = 11
+    time.sleep(t_stop)
+    motion.stopMove()
+    print "FINI !!!"
+    return
+
+
 if __name__ == "__main__":
     search(verbose=True)
     align(verbose=True)
     alignBody(verbose=True)
     walkToBall(verbose=True)
     turnArround(verbose=True)
+    shoot()
