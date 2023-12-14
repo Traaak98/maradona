@@ -25,7 +25,7 @@ motion = control.wakeUp(robot_ip, robot_port)
 nao_drv = control.openEyes(robot_ip, robot_port)
 
 # Variables globales
-# head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
+head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
 camera_global = "front"
 verbose = True
 state = None
@@ -33,7 +33,6 @@ state = None
 # direction rotation tete pour searchBall
 direction = 1
 nb_tour = 0
-
 
 def recv_data_ball(client, camera):
     # send request
