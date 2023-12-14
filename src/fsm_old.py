@@ -4,7 +4,7 @@ import time
 import numpy as np
 import cv2
 
-import control_head as control
+import control_utils as control
 import pickle
 
 # Voir comment lancer automatiquement le serveur de detection
@@ -182,18 +182,16 @@ def turnArround(verbose=False):
     if verbose:
         print "TURNING AROUND"
 
-    align_x(verbose=True)
-    alignBody_end(verbose=True)
+    control.align_x(s, camera_global, head_yaw, head_pitch,verbose=True)
+    control.alignBody_end(head_yaw, head_pitch, verbose=True)
     control.headControl(motion, head_yaw, 0, verbose=False)
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
-
-    l_x, l_y = [], []
 
     if verbose:
         print "BODY GOOD"
 
     # On tourne autour de la balle tant que le but n'est pas detecte et centre :
-    while not searchGoal(verbose=True):
+    while not control.searchGoal(s, verbose=True):
         if verbose:
             print "MOVE"
         vx = 0
@@ -201,11 +199,9 @@ def turnArround(verbose=False):
         vtheta = 0.05
         motion.move(vx, vy, vtheta)
         x, y, theta = motion.getRobotPosition(False)
-        print "Position : ", x, y, theta
-        l_x.append(x)
-        l_y.append(y)
+        if verbose:
+            print "Position : ", x, y, theta
 
-    np.savez("data.npz", x=l_x, y=l_y)
     motion.stopMove()
     if verbose:
         print "END TURNING AROUND"
@@ -238,12 +234,12 @@ def search(verbose=False):
             print "head_yaw = ", head_yaw * 180 / np.pi, "head_pitch = ", head_pitch * 180 / np.pi
         control.headControl(motion, head_yaw + direction * 0.1, head_pitch, verbose=False)
 
-        detect_, x, y, w, h = recv_data_ball(s, "bottom")
+        detect_, x, y, w, h = control.recv_data_ball(s, "bottom")
         if detect_:
             camera_global = "bottom"
             break
 
-        detect_, x, y, w, h = recv_data_ball(s, "front")
+        detect_, x, y, w, h = control.recv_data_ball(s, "front")
         if detect_:
             # on reste sur la camera du haut
             camera_global = "front"
@@ -265,7 +261,7 @@ def align(verbose=False):
     control.headControl(motion, head_yaw, head_pitch, verbose=False)
     # Center the ball in the image to align the head
     # Detect ball
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
     while abs(err_x) > 20 or abs(err_y) > 15:
@@ -282,7 +278,7 @@ def align(verbose=False):
 
             control.headControl(motion, head_yaw + yaw, head_pitch + pitch, verbose=False)
             # Detect ball
-            detect_, x, y, w, h = recv_data_ball(s, camera_global)
+            detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
             err_x = nao_drv.image_width / 2 - x
             err_y = nao_drv.image_height / 2 - y
         else:
@@ -327,7 +323,7 @@ def walkToBall(verbose=False):
     control.headControl(motion, head_yaw, head_pitch, verbose=False)
     # Walk until the ball is big enough
     # Detect ball
-    detect_, x, y, w, h = recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
     w_max = 45
@@ -337,7 +333,7 @@ def walkToBall(verbose=False):
 
     while w < w_max:
         # Detect ball
-        detect_, x, y, w, h = recv_data_ball(s, camera_global)
+        detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
         # Pour l instant inutile et non fonctionnel
         if abs(err_x - nao_drv.image_width / 2 + x) > 100 or abs(err_y - nao_drv.image_height / 2 + y) > 80:
             # Saut dans l'erreur
