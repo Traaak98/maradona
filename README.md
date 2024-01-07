@@ -17,7 +17,7 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 ### Logiciels
 * Simulation sur V-REP
 * Environnement virtuel sous python 2.7
-* Utilisation de yolov3 : https://github.com/hjinnkim/yolov3-python2.7
+* Utilisation de Yolov8 : https://github.com/ultralytics/ultralytics
 
 
 ## Sommaire
@@ -49,7 +49,7 @@ Il faut maintenant passer au stade supérieur : le faire marquer en vrai et en m
 * Détection des coins du but
 * Centrer la balle dans l'image
 * Marcher jusqu'à la balle
-* Aligner la balle, le nao et le but
+* Aligner la balle, le Nao et le but
 * Taper dans la balle
 
 ### Travail en cours
