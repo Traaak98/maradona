@@ -31,7 +31,6 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 4. [Guide d'utilisation](#guide-dutilisation)
    1. [Lancer le robot en simulation](#lancer-le-robot-en-simulation)
    2. [Lancer le robot réel](#lancer-le-robot-réel)
-   3. [Passage filmé](#passage-filmé)
 
 ## Structure du Git
 Le répertoire GitLab contient les dossiers suivants :
@@ -41,27 +40,28 @@ Le répertoire GitLab contient les dossiers suivants :
 
 ## Informations générales
 ### État du projet
-La fsm est en cours de développement. Le Nao va jusqu'à la balle. Il faut maintenant être capable de s'orienter avec les buts.
+Premier but de Nao Maradonna marqué sous simulation !!!!! 
+La vidéo du but est disponible dans le git sous le nom **"video_nao-2023-12-14_11.51.23.mkv"**.
+Il faut maintenant passer au stade supérieur : le faire marquer en vrai et en musique !
 
 ### Travail effectué
 * Détection de la balle
 * Détection des coins du but
 * Centrer la balle dans l'image
 * Marcher jusqu'à la balle
+* Aligner la balle, le nao et le but
+* Taper dans la balle
 
 ### Travail en cours
-* Mise en place FSM
-* Choix entre les différentes caméra
+* Mise en place sur système réel
+* Fonction pour lancer plusieurs musique en fonction de l'état du robot (dans la FSM).
 
 ### Travail à faire
-- [x] Trouver la cause des sursauts lors du passage d'une fonction à l'autre pour l'instant gommé.
-- [x] Suivre balle en cap aussi.
-- [x] Saut dans le calcul de l'erreur. Vient de la mauvaise détection de la balle.
-- [x] Passer fsm_old dans fsm et tester.
-
-
-- [ ] Changer *control_head.py* en *utils.py* et mettre recv_data dans utils
-- [ ] Faire tourner le Nao autour de la balle !
+- [ ] Mettre en place la communication entre le robot et le PC
+- [ ] Faire un test son
+- [ ] Valider l'apprentissage yolo dans le monde réel
+- [ ] Valider nos coefficient dans le monde réel
+- [ ] Marquer un but en vrai !
 
 ## Fonctionnement de la FSM
 ```mermaid
@@ -73,9 +73,26 @@ graph LR;
     AlignHead-- noDetectBall -->Search;
     AlignHead-- noAlignHeadDetectBall -->AlignHead;
     AlignHead-- alignHeadDetectBall -->AlignBody;
-    AlignBody-- noDetectBall -->Search;
     AlignBody-- alignBodyDetectBall -->WalkToBall;
     WalkToBall-- noDetectBall -->Search;
-    WalkToBall-- noAttainBall -->WalkToBall;
-    WalkToBall-- attainBall -->Stop;
+    WalkToBall-- attainBall -->Turn;
+    Turn-- detectGoal -->Shoot;
+    Shoot-- goal -->Stop;
 ```
+## Guide d'utilisation
+### Lancer le robot en simulation
++ Sourcer les commandes liées à naoqi dans l'environnement python 2.7 :
+```bash
+export PYTHONPATH=${PYTHONPATH}:/{Your_path_directory}/UE52-VS-IK/external-software/pynaoqi-python2.7-2.1.4.13-linux64
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/{Your_path_directory}/UE52-VS-IK/external-software/naolibs
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/{Your_path_directory}/UE52-VS-IK/external-software/naoqi-sdk-2.1.4.13-linux64/lib
+```
+* Ouvrir V-REP.
+* Ouvrir le scène **UE52-2021-minigoal-single-nao-yellow-ball.ttt** dans le dossier **vs/scenes** de **UE52-VS-IK**.
+* Démarrer la simulation.
+* Lancer le script **server.py** dans le dossier **src** sous un environnement python 3.9 au minimum.
+* Lancer le script **fsm_nao.py** dans le dossier **src** sous un environnement python 2.7.
+
+**ATTENTION : il faut lancer les scripts en étant dans le dossier /src sinon les chemins ne seront pas les bons pour récupérer les images.**
+### Lancer le robot réel
+* En cours de développement
