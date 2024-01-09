@@ -8,7 +8,6 @@ from naoqi import ALProxy
 import nao_driver
 import pickle
 
-
 # set default IP nd port on simulated robot
 robot_ip = "localhost"
 robot_port = 11212
@@ -193,7 +192,7 @@ def searchGoal(s, verbose=False):
             print "milieu_x = ", milieu_x
 
         # Verifier que ce milieu est quasi au centre de l'image.
-        borne_x_min = 320 / 2 - 6 # TODO : trouver les bonnes bornes
+        borne_x_min = 320 / 2 - 6  # TODO : trouver les bonnes bornes
         borner_x_max = 320 / 2 + 6
         if borne_x_min < milieu_x < borner_x_max:
             if verbose:
@@ -268,6 +267,12 @@ def align_x(motionProxy, nao_drv, s, camera_global, head_yaw, head_pitch, verbos
         print "Ball centered"
         print "____________________________________________________________________________"
 
+    return
+
+
+def music(robot_IP, robot_PORT, filepath):
+    aup = ALProxy("ALAudioPlayer", robot_IP, robot_PORT)
+    aup.post.playFile(filepath, 0.5, 0.0)
     return
 
 

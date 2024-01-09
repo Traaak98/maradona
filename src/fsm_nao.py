@@ -34,11 +34,19 @@ state = None
 direction = 1
 nb_tour = 0
 
+# Choisir le mode real ou simulation :
+mode = "real" # "simu"
+
+# Liste path musique
+filepath_music = []
 
 def searchBall():
     # Initialisation position tete
     global direction, nb_tour, camera_global, verbose, state, head_yaw, head_pitch
     state = "searchBall"
+
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[0])
 
     detect_, x, y, w, h = control.recv_data_ball(s, "bottom")
     if detect_:
@@ -89,6 +97,9 @@ def searchBall():
 def walkToBall():
     global camera_global, verbose, state    #, head_yaw, head_pitch
     state = "walkToBall"
+
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[1])
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     # Detect ball
@@ -134,6 +145,8 @@ def walkToBall():
 
 def doWait():
     global verbose
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[2])
     if verbose:
         print "--- Wait ---"
     time_dodo = 2
@@ -145,6 +158,8 @@ def doWait():
 
 def doStop():
     global verbose
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[3])
     if verbose:
         print "--- Stop ---"
     motion.stopMove()
@@ -156,6 +171,9 @@ def doStop():
 def alignHead():
     global verbose, camera_global, state    #, head_yaw, head_pitch
     state = "alignHead"
+
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[4])
 
     # Center the ball in the image to align the head
     # Detect ball
@@ -189,6 +207,9 @@ def alignHead():
 def alignBody():
     global camera_global, verbose, state    #, head_yaw, head_pitch
     state = "alignBody"
+
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[5])
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
@@ -221,6 +242,9 @@ def alignBody():
 def turnArround():
     global state, verbose
     state = "turnArround"
+
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[6])
 
     if verbose:
         print "TURNING AROUND"
@@ -258,6 +282,8 @@ def turnArround():
 def doShoot():
     global verbose, state
     state = "shoot"
+    if mode == "real":
+        control.music(robot_ip, robot_port, filepath_music[7])
     if verbose:
         print "SHOOT"
     # verifier alignement corps / balle
