@@ -12,6 +12,28 @@ import pickle
 robot_ip = "localhost"
 robot_port = 11212
 
+def send_image():
+    # Adjust the image sending logic based on your needs
+    with open('hihi.jpg', 'rb') as img_file:
+        image_data = img_file.read()
+
+    # Send the image data in chunks
+    print "Sending image data..."
+    chunk_size = 4096
+    for i in range(0, len(image_data), chunk_size):
+        s.sendall(image_data[i:i + chunk_size])
+
+    # Indicate the end of the image file
+    s.sendall(b'')
+    print "Image sent successfully!"
+
+    # Receive coordinates from the server
+    data = s.recv(4096)
+    if data:
+        coordinates = eval(data.decode())
+        print "Received coordinates: ", coordinates
+
+    s.close()
 
 def wakeUp(robot_ip, robot_port):
     try:
@@ -277,6 +299,54 @@ def music(robot_IP, robot_PORT, filepath):
 
 
 if __name__ == "__main__":
+    import socket
+
+    image = "hihi.jpg"
+
+    host = '127.0.0.1'
+    port = 6666
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port))
+
+    try:
+        # open image
+        myfile = open(image, 'rb')
+        bytes = myfile.read()
+        size = len(bytes)
+
+        # send image size to server
+        s.sendall("SIZE %s" % size)
+        answer = s.recv(4096)
+
+        print 'answer = %s' % answer
+
+        # send image to server
+        if answer == 'GOT SIZE':
+            # s.sendall(bytes)
+            chunk_size = 4096
+            for i in range(0, size, chunk_size):
+                print("Sending %s" % i)
+                s.sendall(bytes[i:i + chunk_size])
+                answer_wait = s.recv(4096)
+            print("Sending EOF")
+            s.sendall("EOF")
+
+            # check what server send
+            answer = s.recv(4096)
+            print 'answer = %s' % answer
+
+            if answer == 'GOT IMAGE':
+                s.sendall("BYE BYE ")
+                print 'Image successfully send to server'
+
+        myfile.close()
+
+    finally:
+        s.close()
+
+    quit()
+
     path = os.getcwd()[0:-12]
     print("path = ", path)
     # create NAO driver
@@ -308,3 +378,6 @@ if __name__ == "__main__":
         dt = dt_loop - (time.time() - t0_loop)
         if dt > 0:
             time.sleep(dt)
+
+
+
