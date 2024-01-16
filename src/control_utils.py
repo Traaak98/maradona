@@ -12,28 +12,45 @@ import pickle
 robot_ip = "localhost"
 robot_port = 11212
 
-def send_image():
-    # Adjust the image sending logic based on your needs
-    with open('hihi.jpg', 'rb') as img_file:
-        image_data = img_file.read()
+# Pas besoin d'envoyer l'image au serveur : juste reception des informations
+def send_image(s):
+    image = "hihi.jpg"
 
-    # Send the image data in chunks
-    print "Sending image data..."
-    chunk_size = 4096
-    for i in range(0, len(image_data), chunk_size):
-        s.sendall(image_data[i:i + chunk_size])
+    try:
+        # open image
+        myfile = open(image, 'rb')
+        bytes = myfile.read()
+        size = len(bytes)
 
-    # Indicate the end of the image file
-    s.sendall(b'')
-    print "Image sent successfully!"
+        # send image size to server
+        s.sendall("SIZE %s" % size)
+        answer = s.recv(4096)
 
-    # Receive coordinates from the server
-    data = s.recv(4096)
-    if data:
-        coordinates = eval(data.decode())
-        print "Received coordinates: ", coordinates
+        print 'answer = %s' % answer
 
-    s.close()
+        # send image to server
+        if answer == 'GOT SIZE':
+            # s.sendall(bytes)
+            chunk_size = 4096
+            for i in range(0, size, chunk_size):
+                print("Sending %s" % i)
+                s.sendall(bytes[i:i + chunk_size])
+                answer_wait = s.recv(4096)
+            print("Sending EOF")
+            s.sendall("EOF")
+
+            # check what server send
+            answer = s.recv(4096)
+            print 'answer = %s' % answer
+
+            if answer == 'GOT IMAGE':
+                s.sendall("BYE BYE ")
+                print 'Image successfully send to server'
+
+        myfile.close()
+
+    finally:
+        s.close()
 
 def wakeUp(robot_ip, robot_port):
     try:
@@ -309,41 +326,7 @@ if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
 
-    try:
-        # open image
-        myfile = open(image, 'rb')
-        bytes = myfile.read()
-        size = len(bytes)
-
-        # send image size to server
-        s.sendall("SIZE %s" % size)
-        answer = s.recv(4096)
-
-        print 'answer = %s' % answer
-
-        # send image to server
-        if answer == 'GOT SIZE':
-            # s.sendall(bytes)
-            chunk_size = 4096
-            for i in range(0, size, chunk_size):
-                print("Sending %s" % i)
-                s.sendall(bytes[i:i + chunk_size])
-                answer_wait = s.recv(4096)
-            print("Sending EOF")
-            s.sendall("EOF")
-
-            # check what server send
-            answer = s.recv(4096)
-            print 'answer = %s' % answer
-
-            if answer == 'GOT IMAGE':
-                s.sendall("BYE BYE ")
-                print 'Image successfully send to server'
-
-        myfile.close()
-
-    finally:
-        s.close()
+    send_image(s)
 
     quit()
 
