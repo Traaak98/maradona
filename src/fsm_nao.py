@@ -18,12 +18,12 @@ s.connect((yolo_host, yolo_port))
 # Possibilite de initialiser tout ca de maniere plus propre avec une classe ou jsp
 # set default IP nd port on simulated robot
 # Choisir le mode real ou simulation :
-mode = "real" # "simu"
+mode = "real"  # "simu"
 
 if mode == "real":
-    robot_ip = "172.19.147.89"
+    robot_ip = "172.19.147.99"
     robot_port = 9559
-else :
+else:
     robot_ip = "localhost"
     robot_port = 11212
 motion = control.wakeUp(robot_ip, robot_port)
@@ -41,10 +41,10 @@ state = None
 direction = 1
 nb_tour = 0
 
-
-
 # Liste path musique
-filepath_music = ["DancingMoonlight.wav", "TiAmo.wav", "Cheveux.wav", "GasGasGas.wav", "4LJacky.wav", "PONPONPON.wav", "DinoDanger.wav", "RickRoll.wav"]
+filepath_music = ["DancingMoonlight.wav", "TiAmo.wav", "Cheveux.wav", "GasGasGas.wav", "4LJacky.wav", "PONPONPON.wav",
+                  "DinoDanger.wav", "RickRoll.wav"]
+
 
 def searchBall():
     # Initialisation position tete
@@ -101,7 +101,7 @@ def searchBall():
 
 
 def walkToBall():
-    global camera_global, verbose, state    #, head_yaw, head_pitch
+    global camera_global, verbose, state  # , head_yaw, head_pitch
     state = "walkToBall"
 
     if mode == "real":
@@ -175,7 +175,7 @@ def doStop():
 
 
 def alignHead():
-    global verbose, camera_global, state    #, head_yaw, head_pitch
+    global verbose, camera_global, state  # , head_yaw, head_pitch
     state = "alignHead"
 
     if mode == "real":
@@ -211,7 +211,7 @@ def alignHead():
 
 
 def alignBody():
-    global camera_global, verbose, state    #, head_yaw, head_pitch
+    global camera_global, verbose, state  # , head_yaw, head_pitch
     state = "alignBody"
 
     if mode == "real":
