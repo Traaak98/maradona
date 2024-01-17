@@ -64,9 +64,9 @@ Il faut maintenant passer au stade supérieur : le faire marquer en vrai et en m
 - [x] Mettre en place la communication entre le robot et le PC
 - [ ] Régler le problème d'envoie de l'image issu de la caméra du robot sur notre serveur
 - [ ] Valider l'apprentissage yolo dans le monde réel
+<img align="right" src="images/main_maradonna.jpg" alt="Éditer sur GitLab" width="350px"/>
 - [ ] Valider nos coefficient dans le monde réel
 - [ ] Marquer un but en vrai !
-<img align="right" src="images/main_maradonna.jpg" alt="Éditer sur GitLab" width="350px"/>
 
 ## :rainbow: Guide d'utilisation
 ### Lancer le robot en simulation
