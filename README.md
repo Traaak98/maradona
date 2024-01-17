@@ -5,7 +5,7 @@
 
 ### :alien: Auteurs
 * DE VAULCHIER Apolline <apolline.de_vaulchier@ensta-bretagne.org> (Promotion ENSTA Bretagne 2024 - Spécialité Robotique Autonome)
-* Clara Gondot <clara.gondot@ensta-bretagne.org> (Promotion ENSTA Bretagne 2024 - Spécialité Robotique Autonome)
+* GONDOT Clara <clara.gondot@ensta-bretagne.org> (Promotion ENSTA Bretagne 2024 - Spécialité Robotique Autonome)
 
 ### :rabbit: Description
 Imaginer un futur où les NAO remplacent les joueurs de foot. 
