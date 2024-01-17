@@ -21,6 +21,10 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
 
 
 ## :tumbler_glass: Sommaire
+
+<details open="open">
+<summary>Sommaire</summary>
+
 1. [Structure du Git](#structure-du-git)
 2. [Informations générales](#informations-générales)
 	1. [État du projet](#état-du-projet)
@@ -34,6 +38,8 @@ Imaginer un futur où les NAO remplacent les joueurs de foot.
    1. [FSM](#fsm) 
    2. [Fonctionnement](#fonctionnement)
    3. [Problèmes rencontrés](#problèmes-rencontrés)
+   4. 
+</details>
 
 ## :crown: Structure du Git
 Le répertoire GitLab contient les dossiers suivants :
@@ -124,5 +130,5 @@ NB: Dans la mise en place en mode "real", pour chaque état, le robot va jouer u
 
 ### Problèmes rencontrés
 Lors de la mise en place du système réel il faut obtenir l'image de la caméra du robot. Pour cela, nous devons envoyer l'image issu du robot sur notre serveur.
-L'image issu de la caméra est un tableau numpy que nous envoyons via le package **pickle**. Cependant, nous arrivons à envoyer un tableau numpy pour la fonction
+L'image issue de la caméra est un tableau numpy que nous envoyons via le package **pickle**. Cependant, nous arrivons à envoyer un tableau numpy pour la fonction
 **recv_data_goal** mais pas pour envoyer l'image issu de la caméra du robot. Ainis, le serveur s'interrompt et nous n'avons pas pu faire fonctionner le NAO en mode réel malheureusement.
