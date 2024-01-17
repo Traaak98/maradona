@@ -21,7 +21,7 @@ s.connect((yolo_host, yolo_port))
 mode = "real"  # "simu"
 
 if mode == "real":
-    robot_ip = "172.19.147.99"
+    robot_ip = "172.19.147.117"
     robot_port = 9559
 else:
     robot_ip = "localhost"
@@ -52,9 +52,9 @@ def searchBall():
     state = "searchBall"
 
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[0])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[0])
 
-    detect_, x, y, w, h = control.recv_data_ball(s, "bottom")
+    detect_, x, y, w, h = control.recv_data_ball(s, "bottom", nao_drv, mode=mode)
     if detect_:
         camera_global = "bottom"
         if verbose:
@@ -67,7 +67,7 @@ def searchBall():
             print "Found Ball"
         return "detectBall"
 
-    detect_, x, y, w, h = control.recv_data_ball(s, "front")
+    detect_, x, y, w, h = control.recv_data_ball(s, "front", nao_drv, mode=mode)
     if detect_:
         camera_global = "front"
         if verbose:
@@ -105,17 +105,17 @@ def walkToBall():
     state = "walkToBall"
 
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[1])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[1])
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     # Detect ball
-    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global, nao_drv, mode=mode)
     if not detect_:
         return "noDetectBall"
     w_max = 50
 
     while w < w_max:
-        detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
+        detect_, x, y, w, h = control.recv_data_ball(s, camera_global, nao_drv, mode=mode)
         if not detect_:
             motion.stopMove()
             return "noDetectBall"
@@ -152,7 +152,7 @@ def walkToBall():
 def doWait():
     global verbose
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[2])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[2])
     if verbose:
         print "--- Wait ---"
     time_dodo = 2
@@ -165,7 +165,7 @@ def doWait():
 def doStop():
     global verbose
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[3])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[3])
     if verbose:
         print "--- Stop ---"
     motion.stopMove()
@@ -179,11 +179,11 @@ def alignHead():
     state = "alignHead"
 
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[4])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[4])
 
     # Center the ball in the image to align the head
     # Detect ball
-    detect_, x, y, w, h = control.recv_data_ball(s, camera_global)
+    detect_, x, y, w, h = control.recv_data_ball(s, camera_global, nao_drv, mode=mode)
     err_x = nao_drv.image_width / 2 - x
     err_y = nao_drv.image_height / 2 - y
 
@@ -215,7 +215,7 @@ def alignBody():
     state = "alignBody"
 
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[5])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[5])
     # control.headControl(motion, head_yaw, head_pitch, verbose=False)
 
     head_yaw, head_pitch = motion.getAngles(["HeadYaw", "HeadPitch"], True)
@@ -250,7 +250,7 @@ def turnArround():
     state = "turnArround"
 
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[6])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[6])
 
     if verbose:
         print "TURNING AROUND"
@@ -268,7 +268,7 @@ def turnArround():
         print "BODY GOOD"
 
     # On tourne autour de la balle tant que le but n'est pas detecte et centre :
-    while not control.searchGoal(s, verbose=verbose):
+    while not control.searchGoal(s, nao_drv, mode=mode, verbose=verbose):
         if verbose:
             print "MOVE"
         vx = 0
@@ -289,7 +289,7 @@ def doShoot():
     global verbose, state
     state = "shoot"
     if mode == "real":
-        control.music(robot_ip, robot_port, "/music/" + filepath_music[7])
+        control.music(robot_ip, robot_port, "music/" + filepath_music[7])
     if verbose:
         print "SHOOT"
     # verifier alignement corps / balle
@@ -300,6 +300,9 @@ def doShoot():
 
 
 if __name__ == "__main__":
+
+    control.send_image(s, nao_drv)
+    quit()
 
     # load fsm definition from a text file
     f.load_fsm_from_file("fsm.txt")

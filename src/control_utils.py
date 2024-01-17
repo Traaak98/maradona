@@ -9,33 +9,45 @@ import nao_driver
 import pickle
 
 # set default IP nd port on simulated robot
-robot_ip = "localhost"
-robot_port = 11212
+#robot_ip = "localhost"
+#robot_port = 11212
 
 # Pas besoin d'envoyer l'image au serveur : juste reception des informations
-def send_image(s):
-    image = "hihi.jpg"
+def send_image(s, nao_drv):
+    path = os.getcwd()[0:-12]
+    bottom_image = path + "imgs/out_down_11212.ppm"
+    front_image = path + "imgs/out_11212.ppm"
 
     try:
         # open image
-        myfile = open(image, 'rb')
-        bytes = myfile.read()
-        size = len(bytes)
+        print "change camera"
+        nao_drv.change_camera(0)
+        print "get image"
+        img_ok, myfile, image_width, image_height = nao_drv.get_image()
+        # bytes = myfile.tobytes()
+        size = len(myfile)
 
+        print "send size"
         # send image size to server
-        s.sendall("SIZE %s" % size)
+        s.sendall("SIZE F %s" % size)
         answer = s.recv(4096)
 
         print 'answer = %s' % answer
 
         # send image to server
         if answer == 'GOT SIZE':
+            print "sending image"
             # s.sendall(bytes)
-            chunk_size = 4096
-            for i in range(0, size, chunk_size):
-                print("Sending %s" % i)
-                s.sendall(bytes[i:i + chunk_size])
-                answer_wait = s.recv(4096)
+            # chunk_size = 4096
+            s.sendall("TEST")
+            # s.send(pickle.dumps(myfile, protocol=2))
+            print "chakcpoint"
+            s.send(pickle.dumps(myfile, protocol=2))
+            answer_wait = s.recv(4096)
+            # for i in range(0, size, chunk_size):
+            #     print("Sending %s" % i)
+            #     s.sendall(bytes[i:i + chunk_size])
+            #     answer_wait = s.recv(4096)
             print("Sending EOF")
             s.sendall("EOF")
 
@@ -47,10 +59,45 @@ def send_image(s):
                 s.sendall("BYE BYE ")
                 print 'Image successfully send to server'
 
-        myfile.close()
+        # myfile.close()
+
+        # open image
+        nao_drv.change_camera(1)
+        img_ok, myfile, image_width, image_height = nao_drv.get_image()
+        # bytes = myfile.tobytes()
+        size = len(myfile)
+
+        # send image size to server
+        s.sendall("SIZE B %s" % size)
+        answer = s.recv(4096)
+
+        print 'answer = %s' % answer
+
+        # send image to server
+        if answer == 'GOT SIZE':
+            # s.sendall(bytes)
+            # chunk_size = 4096
+            s.send(pickle.dumps(myfile, protocol=2))
+            answer_wait = s.recv(4096)
+            # for i in range(0, size, chunk_size):
+            #     print("Sending %s" % i)
+            #     s.sendall(bytes[i:i + chunk_size])
+            #     answer_wait = s.recv(4096)
+            print("Sending EOF")
+            s.sendall("EOF")
+
+            # check what server send
+            answer = s.recv(4096)
+            print 'answer = %s' % answer
+
+            if answer == 'GOT IMAGE':
+                s.sendall("BYE BYE ")
+                print 'Image successfully send to server'
+
+        # myfile.close()
 
     finally:
-        s.close()
+        return
 
 def wakeUp(robot_ip, robot_port):
     try:
@@ -158,7 +205,9 @@ def openEyes(robot_ip, robot_port):
     return nao_drv
 
 
-def recv_data_ball(client, camera):
+def recv_data_ball(client, camera, nao_drv, mode="real"):
+    if mode == "real":
+        send_image(client, nao_drv)
     # send request
     if camera == "front":
         # print "FRONT"
@@ -180,7 +229,9 @@ def recv_data_ball(client, camera):
     return ok, x, y, w, h
 
 
-def recv_data_goal(client):
+def recv_data_goal(client, nao_drv, mode="real"):
+    if mode == "real":
+        send_image(client, nao_drv)
     # send request
     client.sendall("REQUEST CORNER")
     # receive and store data
@@ -196,10 +247,10 @@ def recv_data_goal(client):
     return ok, x, y, w, h, nb_corner
 
 
-def searchGoal(s, verbose=False):
+def searchGoal(s, nao_drv, mode="real", verbose=False):
     if verbose:
         print "SEARCHING GOAL"
-    detect_, x, y, w, h, nb_corner = recv_data_goal(s)
+    detect_, x, y, w, h, nb_corner = recv_data_goal(s, nao_drv, mode=mode)
     if nb_corner >= 3:
         if verbose:
             print "GOAL FOUND"
@@ -310,8 +361,9 @@ def align_x(motionProxy, nao_drv, s, camera_global, head_yaw, head_pitch, verbos
 
 
 def music(robot_IP, robot_PORT, filepath):
+    print "music_path = ", filepath
     aup = ALProxy("ALAudioPlayer", robot_IP, robot_PORT)
-    aup.post.playFile(filepath, 0.5, 0.0)
+    aup.post.playFile(filepath)
     return
 
 

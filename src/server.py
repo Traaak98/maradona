@@ -33,14 +33,14 @@ camera = ""
 
 # Find image :
 path = os.getcwd()[0:-12]
-basename = path + "imgs/out%s_11212.ppm"
-camera_id = "_down" # _down
+bottom_image = path + "imgs/out_down_11212.ppm"
+front_image = path + "imgs/out_11212.ppm"
+camera_id = "front"
 reel = True
 
 while True:
 
     read_sockets, write_sockets, error_sockets = select.select(connected_clients_sockets, [], [])
-    print("OK")
 
     for sock in read_sockets:
         if sock == server_socket:
@@ -66,11 +66,9 @@ while True:
                     if txt2 == "FRONT":
                         image = cv.imread(path + "imgs/out_11212.ppm")
                         camera = "front"
-                        camera_id = ""
                     elif txt2 == "BOTTOM":
                         image = cv.imread(path + "imgs/out_down_11212.ppm")
                         camera = "bottom"
-                        camera_id = "_down"
                     #t2 = time() - t0
                     #print("Avant utilisation modele : ", t2)
                     print("camera = ", image)
@@ -122,11 +120,26 @@ while True:
                     print('got BYE')
                     sock.shutdown()
 
-                elif txt3[0:4] == "SIZE":
+                elif txt3[0:6] == "SIZE F":
                     if reel:
-                        os.remove(basename % camera_id)
+                        if os.path.exists(front_image):
+                            os.remove(front_image)
                         tmp = txt3.split()
-                        size = int(tmp[1])
+                        size = int(tmp[-1])
+
+                        print('got size')
+                        print('size is %s' % size)
+
+                        sock.send(b"GOT SIZE")
+                        # Now set the buffer size for the image
+                        buffer_size = 40960000
+
+                elif txt3[0:6] == "SIZE B":
+                    if reel:
+                        if os.path.exists(bottom_image):
+                            os.remove(bottom_image)
+                        tmp = txt3.split()
+                        size = int(tmp[-1])
 
                         print('got size')
                         print('size is %s' % size)
@@ -136,25 +149,51 @@ while True:
                         buffer_size = 40960000
 
                 else:
-                    if reel:
-                        myfile = open(basename % camera_id, 'ab')
+                    if reel and camera_id == "front":
+                        # myfile = open(front_image, 'ab')
+                        data = pickle.loads(sock.recv(buffer_size))
 
                         if not data:
                             print('no data rip')
-                            myfile.close()
+                            # myfile.close()
                             break
 
                         if txt3[0:3] == 'EOF':
-                            myfile.close()
+                            # myfile.close()
                             print('got EOF')
                             sock.send(b"GOT IMAGE")
                             buffer_size = 4096
                             sock.shutdown()
 
-                        myfile.write(data)
+                        print("wrinting something")
+                        print(type(data))
+
+
+                        print(type(data))
+                        cv.imwrite(front_image, data)
+                        # myfile.write(data)
                         sock.send(b"WRITE OK")
                         print("writing file ....")
 
+                    elif reel and camera_id == "bottom":
+                        # myfile = open(bottom_image, 'ab')
+
+                        if not data:
+                            print('no data rip')
+                            # myfile.close()
+                            break
+
+                        if txt3[0:3] == 'EOF':
+                            # myfile.close()
+                            print('got EOF')
+                            sock.send(b"GOT IMAGE")
+                            buffer_size = 4096
+                            sock.shutdown()
+
+                        cv.imwrite(bottom_image, data)
+                        # myfile.write(data)
+                        sock.send(b"WRITE OK")
+                        print("writing file ....")
 
             except:
                 print("Unexpected error:")
